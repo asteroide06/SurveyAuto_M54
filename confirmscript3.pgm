@@ -1,0 +1,1954 @@
+REM script to take exposures for synthetic tracking in order to confirm asteroid discoveries
+REM Alain Maury 11 Juin 2020... Septembre 2020... Janvier 2021
+REM this version takes images in binning 1x1, preprocess them, and store the preprocessed images in bin1 in a given directory
+REM and bins the images in bin2 and saves them in the bin2 directory.
+REM It selects the fields to be taken according to a field file, provided one gives the declination zone start.
+INCLUDESCRIPT "C:\ImagesNuit\Tools\Prism\TelescopeConfig.pgm" Setup:
+
+///////////////////////////////////////////////////////////
+REM variables
+///////////////////////////////////////////////////////////
+imageA=1
+imageB=0
+currentimage=imageA
+exptimerecentrage=5
+exptimerecentragems=exptimerecentrage*1000
+exptime=30
+numberofimages=72
+expduration=1440
+// 1440s=6°
+expdurationrad=6*TORAD
+
+// telescope de confirmation
+numtel$="A"
+//str numtel numtel$
+numerodeconfirmation=1
+numberoffieldstaken=0
+
+REM Paramètres pour le dithering
+ditheringsize=10
+x0dith=0
+y0dith=0
+///// Initialisé dans le fichier de config. /////////
+// taille des pixels. 
+//TaillePixX=3.75
+//TaillePixY=3.75
+defaultbinning=2
+Focus=1149
+
+//    Half Frame
+	ImageFrame=2
+	X1HF=CenterX-SizeX/(2*ImageFrame)
+	X2HF=CenterX+SizeX/(2*ImageFrame)
+	Y1HF=CenterY-SizeY/(2*ImageFrame)
+	Y2HF=CenterY+SizeY/(2*ImageFrame)
+	INT X1HF X1HF
+	INT X2HF X2HF
+	INT Y1HF Y1HF
+	INT Y2HF Y2HF
+
+//    Quarter Frame
+	ImageFrame=4
+	X1QF=CenterX-SizeX/(2*ImageFrame)
+	X2QF=CenterX+SizeX/(2*ImageFrame)
+	Y1QF=CenterY-SizeY/(2*ImageFrame)
+	Y2QF=CenterY+SizeY/(2*ImageFrame)
+	INT X1QF X1QF
+	INT X2QF X2QF
+	INT Y1QF Y1QF
+	INT Y2QF Y2QF
+
+//    Eighth  Frame
+	ImageFrame=8
+	X18F=CenterX-SizeX/(2*ImageFrame)
+	X28F=CenterX+SizeX/(2*ImageFrame)
+	Y18F=CenterY-SizeY/(2*ImageFrame)
+	Y28F=CenterY+SizeY/(2*ImageFrame)
+	INT X18F X18F
+	INT X28F X28F
+	INT Y18F Y18F
+	INT Y28F Y28F
+
+
+
+
+
+
+// camera settings
+Detectortemperature=-10
+Detector_number=1
+cameraerror$="Camera error"
+coolingtime=6
+
+
+REM Constants needed for autofocalisation
+REM average time to perform a focus test
+// voir là dedans quelles sont les variables réellement utilisées
+Focustime=120
+// resol=1
+// highthresfoc=150000
+// lowthresfoc=20000
+// FocExpTime=5
+// FocExpTimeMS=5000
+// FocSize=100
+// FocCentroidSize=25
+// FocStep=0.1
+// Currentfoc=4.7
+// deltafoc=0.4
+// MaxDeltafoc=0.2
+// Faintstarthres=500
+// foccontamin=10
+// Lastfocusvalue=Currentfoc
+// focdistancemin=10000
+// FocMinDep=Lastfocusvalue-deltafoc
+// FocMaxDep=Lastfocusvalue+deltafoc
+// It takes 3 minutes to do recentering and focalisation
+Focduration=180
+ecartmaxfoc=0.25
+focbasis=0.018792
+constfoctemp=0.028313
+
+////// Initialisé dans le fichier de config. /////////
+defaultdir$="C:\Nightimages\"
+
+focbasisfile$=defaultdir$+"focbasis.txt"
+
+
+REM Creating the night's directory and computing the night's code
+REM reading the clock
+NOW year month day hour minute second MS
+REM if past midnight, the date of the night is yesterday
+REM quite complex to do, if we are on the first night of the month
+
+lengthmonth[1]=31
+REM bissextile years
+yearfrac=year/4
+frac yearfrac bissextile
+if bissextile=0 then
+	lengthmonth[2]=29
+else
+	lengthmonth[2]=28
+endif
+lengthmonth[3]=31
+lengthmonth[4]=30
+lengthmonth[5]=31
+lengthmonth[6]=30
+lengthmonth[7]=31
+lengthmonth[8]=31
+lengthmonth[9]=30
+lengthmonth[10]=31
+lengthmonth[11]=30
+lengthmonth[12]=31
+
+if hour<12 then
+	if day=1 then
+		if month=1 then
+			year=year-1
+			month=12
+			day=31
+		else
+			month=month-1
+		endif
+		day=lengthmonth[month]
+	else
+		day=day-1
+	endif
+endif
+REM directory of the night
+REM Year
+REM *****
+
+str year year$
+REM This is to increment manually in the script every year... (i.e. 2014 was E, 2015 is F, 2016 G, 2017 H 2018 I 2019 J 2020 K etc...
+REM Except we start 0 in 2020...
+year=year-2020
+str year hexyear$
+
+
+REM Month
+REM *****
+
+str month month$
+if month<10 then
+	month$="0"+month$
+	str month hexmonth$
+endif
+
+MonthTable$="ABCDEFGHIJKLM"
+SubString MonthTable$ month+1 1 hexmonth$
+
+REM Day
+REM ****
+
+str day day$
+if day<10 then
+	day$="0"+day$
+	str day hexday$
+endif
+if day>=10 then
+	DayTable$="ABCDEFGHIJKLMNOPQRSTUV"
+	SubString DayTable$ day-9 1 hexday$
+endif
+
+
+nightcode$=hexyear$+hexmonth$+hexday$+numtel$
+// nightcode$=hexyear$+hexmonth$+hexday$
+// print "Asteroid code for this night and this telescope is : " nightcode$
+nightdate$=year$+"-"+month$+"-"+day$
+print nightdate$
+
+Dirlogfile$="C:\Nightimages\logs\"+nightdate$+"-logfile.txt"
+FileExists Dirlogfile$ YesNo
+if YesNo=0 then
+	Open_FileTxt_For_Rewrite  logfile Dirlogfile$
+	//WriteFileTXT logfile "Log file"
+	CloseFileTXT logfile
+ENDIF
+
+
+
+REM **************************
+REM Computer's characteristics
+REM **************************
+
+//defaultdir$="C:\nightimages\"
+// On demande le PC GPU utilisé
+resetdlgbox
+addDlgbox  2 3 1 "PCGPU utilise (1 ou 2. JMM utilise 3) : " 3
+dispdlgbox result
+GetDlgBox pcgpu
+// à modifier
+if pcgpu=1 then
+	defaultdirGPU$="\\PCGPU\e\NightImages\ConfirmationImages\"
+endif
+if pcgpu=2 then
+	defaultdirGPU$="\\PCGPU2\d\NightImages\Confirm\"
+endif
+if pcgpu=3 then
+FileExists  "H:\DoNotDelete_RemoteCheck.txt"  YesNo
+	if YesNo=true then
+		defaultdirGPU$="H:\ConfirmationImages\"
+		defaultConfSyncDir$="H:\confsync\"
+		defaultSyncDir$="H:\sync\"
+		line$="Images will be stored on external directory: "+defaultdirGPU$
+		GOSUB addlogfile:
+	else 
+		defaultdirGPU$="C:\NightImages\ConfirmationImages\"
+		defaultConfSyncDir$="C:\confsync\"
+		defaultSyncDir$="C:\sync\"
+		line$="Images will be stored on MiniPC Local directory: "+defaultdirGPU$
+		GOSUB addlogfile:
+	endif
+	
+endif
+REM **************************
+REM On demande le premier numero de confirmation a prendre en compte
+REM **************************
+resetdlgbox
+addDlgbox  2 200 1 "premier numero de confirmation a prendre en compte : " 1
+dispdlgbox result
+GetDlgBox numerodeconfirmation
+
+
+
+path$=defaultdir$+nightdate$+"\"
+createdir path$
+// print "the images will be stored in : " path$
+REM directory du PC GPU
+pathGPUbin1$=defaultdirGPU$+nightdate$+"\bin1\"
+pathGPUbin2$=defaultdirGPU$+nightdate$+"\bin2\"
+createdir pathGPUbin1$
+createdir pathGPUbin2$
+
+
+
+
+REM ******************************
+REM création de la logfile
+REM ******************************
+
+REM ne pas recréer logfile$ si ça existe déjà.
+Dirlogfile$="C:\Nightimages\logs\"+nightdate$+"-logfile.txt"
+FileExists  Dirlogfile$  YesNo
+if YesNo=FALSE then
+	// on crée la logfile de la nuit
+	Open_FileTxt_For_Rewrite logfile Dirlogfile$
+	CloseFileTxt logfile
+else
+	// The file exist, we look for the last field number
+endif
+
+REM astrometric catalog
+REM ********************
+Cat$="D:\Catalogues\UCAC4\"
+catdir$="D:\Catalogues\UCAC4\"
+line$="The astrometric catalog used is : "+Cat$
+gosub addlogfile:
+
+
+REM *******************************
+REM création du directory de toconf
+REM *******************************
+
+REM ne pas recréer logfile$ si ça existe déjà.
+Dirtoconffile$=defaultConfSyncDir$+nightdate$+"-conflist.txt"
+FileExists  Dirtoconffile$  YesNo
+if YesNo=FALSE then
+	createdir defaultConfSyncDir$+nightdate$+"\"
+	// on crée la logfile de la nuit
+	Open_FileTxt_For_Rewrite toconffile Dirtoconffile$
+	CloseFileTxt toconffile
+else
+	// The file exist, we look for the last field number
+endif
+
+
+
+
+REM ******************************************************************************************
+REM elevation of the sun to start the telescope, then start observing, latitude and longitude
+REM ******************************************************************************************
+GetStdrLongitude Longitude
+GetStdrLatitude Latitude
+degLongitude=Longitude*TODEG
+degLatitude=Latitude*TODEG
+strf degLongitude 4 Longitude$
+strf degLatitude 4 Latitude$
+
+line$="Longitude = "+Longitude$+" Latitude = "+Latitude$
+gosub addlogfile:
+
+// On affiche les caractéristiques de la prise de vue
+
+str exptime exptime$
+line$="Individual exposure time : "+exptime$+" seconds"
+exptimeMS=exptime*1000
+gosub addlogfile:
+
+str numberofimages numberofimages$
+line$="Number of exposures per block: "+numberofimages$
+gosub addlogfile:
+
+exptimenumberofimages=(exptime*numberofimages)+Focduration
+str exptimenumberofimages exptimenumberofimages$
+line$="Each block will last "+exptimenumberofimages$+" seconds"
+gosub addlogfile:
+
+line$="the frames will be taken in binning 1x1 and then reduced to 2x2"
+gosub addlogfile:
+
+
+////////////////////////////////////////////////////////////////
+// opening (or not) the observatory
+////////////////////////////////////////////////////////////////
+
+GETYESNO "Opening the observatory ?" YesNo
+if YesNo=1 then
+	// The observatory needs to be opened
+	// First we wait till it's dark...
+	REM Elevation of the sun at which we start the instrumentation, -5 degrees so in radians 
+	elevsunstartinitnight=-5*TORAD
+	REM **********************************************************************************
+	REM  Elevation of the sun to start observing -12 degrees, so 0.2094 radians
+	elevsunstartbegnight=-12*TORAD
+	// Quand on observera bas sur l'horizon probable qu'on commence plus tôt...
+	gosub startnight:
+endif
+
+////////////////////////////////////////////////////////////////
+// Choix des images de calibration
+////////////////////////////////////////////////////////////////
+if defaultbinning=1 then
+	bias$="C:\Nightimages\calib\darkmedian30sbin1.fits"
+	REM flat file, and its coefficient
+	flat$="C:\Nightimages\calib\flatmedianbin1.fits"
+	coefflat=19389.6
+else
+	bias$="C:\Nightimages\calib\darkmedian30sbin2.fits"
+	REM flat file, and its coefficient
+	flat$="C:\Nightimages\calib\flatmedianbin2.fits"
+	coefflat=19367
+endif
+
+
+
+SetbinningX_EX detector_number defaultbinning
+SetbinningY_EX detector_number defaultbinning
+setwindowfullframe_ex detector_number
+open bias bias$ MINIMIZE
+open flat flat$ MINIMIZE
+
+
+gosub endnighttime:
+
+// Le directory de confirmation est pour l'instant seulement sur PCGPU
+dirconfirm$=defaultConfSyncDir$
+
+goto waittoconfirm:
+end
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+// SUBROUTINES
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+acquisition:
+line$=" "
+gosub addlogfile:
+line$="Preparing exposure "
+gosub addlogfile:
+line$="*********************************************************** "
+gosub addlogfile:
+
+line$="Slewing telescope to desired coordinates"
+gosub addlogfile:
+// On donne la position actuelle
+GET_TELESCOPE_POSITION currentRArad currentDecrad Haut Azi AHor
+RAD_TO_RA currentRArad currentRA$
+RAD_TO_DEC currentDecrad currentDec$
+line$="The telescope is currently at RA: "+currentRA$+" and DEC: "+currentDec$
+gosub addlogfile:
+
+RAD_TO_RA destRArad destRA$
+RAD_TO_DEC destDecrad destDec$
+line$="The telescope needs to slew to RA: "+destRA$+" and DEC: "+destDec$
+gosub addlogfile:
+print destRArad "  " destDecrad
+
+
+MOVETELESCOPE destRArad destDecrad
+WaitForEndMoveTelescope
+line$=" "
+gosub addlogfile:
+
+// on dérive coord$ pour rajouter les coordonnées du champ au nom du fichier
+RAhour=destRArad*todeg/15
+frac RAhour RAmin
+int RAhour RAhour
+RAmin=RAmin*60
+frac RAmin RAsec
+int RAmin RAmin
+RAsec=RAsec*60
+int RAsec RAsec
+if RAsec=59 then
+	RAsec=0
+	incr RAmin
+	if RAmin=60 then
+		RAmin=0
+		incr RAhour
+		if RAhour=24 then
+			RAhour=0
+		endif
+	endif
+endif
+
+
+
+
+str RAhour RAhour$
+str RAmin RAmin$
+str RAsec RAsec$
+	
+if RAhour<10 then
+	RAhour$="0"+RAhour$
+endif
+if RAmin<10 then
+	RAmin$="0"+RAmin$
+endif
+if Rasec<10 then
+	RAsec$="0"+RAsec$
+endif
+
+
+if destDecrad>0 then
+	decsign$="+"
+	absdecrad=destDecrad
+else
+	decsign$="-"
+	abs destDecrad absdecrad
+endif
+
+Decdeg=absdecrad*todeg
+frac Decdeg Decmin
+int Decdeg Decdeg
+Decmin=Decmin*60
+frac Decmin Decsec
+int Decmin Decmin
+Decsec=Decsec*60
+int Decsec Decsec
+
+if Decsec=59 then
+	Decsec=0
+	incr Decmin
+	if Decmin=60 then
+		Decmin=0
+		incr Decdeg
+	endif
+endif
+
+
+str Decdeg Decdeg$
+str Decmin Decmin$
+str Decsec Decsec$
+
+if Decdeg<10 then
+	Decdeg$="0"+Decdeg$
+endif
+if Decmin<10 then
+	Decmin$="0"+Decmin$
+endif
+if Decsec<10 then
+	Decsec$="0"+Decsec$
+endif
+
+coord$=numerodeconfirmation$+"-"+RAhour$+"h"+RAmin$+"m"+RAsec$+"s"+decsign$+Decdeg$+"d"+Decmin$+"m"+Decsec$+"s"
+line$=coord$
+gosub addlogfile:
+
+// Les fichiers de confirmations doivent avoir la syntaxe : 12C1-G-12h38m55s-49d21m00s_12C1G01
+// donc nightcode$+"-"+coord$+"_"+Astername$
+
+// 					path$ c'est c:\Nightimages\datedelanuit\
+// On a                   defaultdirGPU$="\\PCGPU\e\NightImages\ConfirmationImages\"
+// ou                       defaultdirGPU$="\\PCGPU2\d\NightImages\ConfirmationImages\"
+// on a aussi           pathGPUbin1$=defaultdirGPU$+nightdate$+"\bin1\"
+// ou                       pathGPUbin2$=defaultdirGPU$+nightdate$+"\bin2\"
+
+
+fieldname$=nightcode$+"-"+coord$+"_"+Astername$
+// La première fois on crée les directory pour les images.
+// pathfield$ est donc : c:\Nightimages\datedelanuit\nomduchamp1, puis 2, etc...
+pathfield$=path$+fieldname$+"\"
+createdir pathfield$
+line$="The images will be saved in directory : "+pathfield$
+gosub addlogfile:
+ppathbin2field$=pathGPUbin2$+fieldname$+"\"
+ppathbin1field$=pathGPUbin1$+fieldname$+"\"
+createdir ppathbin2field$
+createdir ppathbin1field$
+line$="The preprocessed bin1 images will be saved in directory : "+ppathbin1field$
+gosub addlogfile:
+line$="The preprocessed bin2 images will be saved in directory : "+ppathbin2field$
+gosub addlogfile:
+
+
+rad_to_ra destRArad RA$
+rad_to_Dec destDecrad Dec$
+line$="Telescope slewed to RA = "+RA$+" and declination = "+Dec$
+gosub addlogfile:
+line$="Waiting 3 seconds for the telescope to settle down..."
+gosub addlogfile:
+Delay 6000
+WaitForEndDelay
+gosub recentrageastrometrique:
+// The telescope is now, or should now be at the desired position
+currentRArad=destRArad
+currentDecrad=destDecrad
+
+// gosub autofoc:
+set_focuser Currentfoc
+gosub autofocusgauss:
+
+for j=1 numberofimages
+	numero=j-1
+	str numero numero$
+	str j j$
+	if j=1 then
+		now year  month  day  hour  minute  second  millisecond
+		line$="_________________________________"
+		gosub addlogfile:
+		line$="First exposure started"
+		gosub addlogfile:
+		line$="_________________________________"
+		gosub addlogfile:
+		REM we expose imageA only.
+		startExposure_EX detector_number exptimeMS
+		waitForEndExposure_EX detector_number 
+		REM Recovering the image in order to save it
+		getLastImageExposure_EX detector_number imgA
+		line$="First exposure finished"
+		gosub addlogfile:
+		GetCCDTemperature_Ex Detector_number 0 CMOSTemperature
+		strf CMOSTemperature 1 CMOSTemperature$
+		line$="CCD temperature is :"+CMOSTemperature$
+		gosub addlogfile:
+		line$=""
+		gosub addlogfile:
+		currentimage=imageB
+		// We need to save this image as a reference.
+		duplicate imgA imgref
+		if defaultbinning=1 then
+			window imgref X1QF Y1QF X2QF Y2QF		
+		else
+			window imgref X18F Y18F X28F Y28F		
+		endif
+
+	else
+		REM Moving the telescope for dithering
+		random xdith
+		random ydith
+		// xdith et ydith sont des nombres entre 0 et 1, on multiplie par 20 pour avoir une valeur de pixel
+		xdith=xdith*ditheringsize
+		ydith=ydith*ditheringsize
+		// Ca c'est juste pour transformer le chiffre en une chaine de caractère avec 3 chiffres derrière la virgule
+		strf xdith 3 xdith$
+		strf ydith 3 ydith$
+		// On imprime (aussi dans le log)
+		line$=" "
+		gosub addlogfile:
+		line$="xdith : "+xdith$+" ydith : "+ydith$
+		gosub addlogfile:
+		// La position à laquelle doit se trouver l'étoile est x*ditheringsize et y*ditheringsize
+		// Le décalage à appliquer est donc :
+		// Sachant que x0dith et y0dith sont la position de l'image originale.
+		adith=xdith-x0dith
+		bdith=ydith-y0dith
+		// et on déplace le télescope du nombre de pixels en x et en y
+		adithrad=(adith*TORAD)/3600
+		bdithrad=(bdith*TORAD)/3600
+		RAdithrad=currentRArad+adithrad
+		Decdithrad=currentDECrad+bdithrad
+		movetelescope RAdithrad Decdithrad
+		WaitForEndMoveTelescope
+		strf adith 2 adith$
+		strf bdith 2 bdith$
+		line$="move x= "+adith$+" move y = "+bdith$
+		x0dith=xdith
+		y0dith=ydith
+		gosub addlogfile:
+		delay 3000
+		waitforenddelay
+		//Pour l'image suivante, vu qu'il ne faut pas faire une marche au hasard, on tient compte de x et y 
+		x0dith=xdith
+		y0dith=ydith
+		REM This is not the first image, it is saved on the hard disk while the next image is exposed
+		if currentimage=imageA then
+			line$="_________________________________"
+			gosub addlogfile:
+			line$="Exposure number "+j$+" started"
+			gosub addlogfile:
+			line$="_________________________________"
+			gosub addlogfile:
+			
+// path$ c'est c:\Nightimages\datedelanuit\
+// On a defaultdirGPU$="\\PCGPU\e\NightImages\ConfirmationImages\"
+// ou defaultdirGPU$="\\PCGPU2\d\NightImages\ConfirmationImages\"
+// on a aussi pathGPUbin1$=defaultdirGPU$+nightdate$+"\bin1\"
+// ou pathGPUbin2$=defaultdirGPU$+nightdate$+"\bin2\"
+// fieldname$=nightcode$+"-"+coord$+"_"+Astername$
+// La première fois on crée les directory pour les images.
+
+			startExposure_EX detector_number ExptimeMS
+			REM here we save imageB
+			NameimageB$=pathfield$+nightcode$+"-"+coord$+"_"+Astername$+"-"+numero$
+			savefit imgB NameimageB$
+			REM Preprocessing of the image
+			sub imgB bias
+			div imgB flat coefflat
+			NameimageB$=ppathbin1field$+nightcode$+"-"+coord$+"_"+Astername$+"-"+numero$
+			// recentering the image on imgref
+			duplicate imgB imgtmp
+			if defaultbinning=1 then
+				window imgtmp X1QF Y1QF X2QF Y2QF		
+			else
+				window imgtmp X18F Y18F X28F Y28F		
+			endif
+			auto_register imgtmp imgref dx dy
+			strf dx 1 dx$
+			strf dy 1 dy$
+			line$="dx = "+dx$+" dy = "+dy$
+			gosub addlogfile:
+			REM On convertit en int pour ne pas déplacer en fraction de pixels (ne pas allonger les points chauds)
+			round dx dx
+			round dy dy
+			translate imgB dx dy
+			savefit imgB NameimageB$
+			binningreduce imgB 2 2
+			print "binning done"
+			NameimageB$=ppathbin2field$+nightcode$+"-"+coord$+"_"+Astername$+"-"+numero$
+			print NameimageB$
+			savefit imgB NameimageB$
+			line$="Image "+NameimageB$+" done"
+			gosub addlogfile:
+			close imgB
+			close imgtmp
+			waitForEndExposure_EX detector_number 
+			REM Recovering the image in order to save it
+			getLastImageExposure_EX detector_number imgA
+			autovisu imgA
+			GetCCDTemperature_Ex Detector_number 0 CMOSTemperature
+			strf CMOSTemperature 1 CMOSTemperature$
+			line$="CCD temperature is :"+CMOSTemperature$
+			gosub addlogfile:
+			currentimage=imageB
+		else
+			line$="_________________________________"
+			gosub addlogfile:
+			line$="Exposure number "+j$+" started"
+			gosub addlogfile:
+			line$="_________________________________"
+			gosub addlogfile:
+			startExposure_EX detector_number ExptimeMS
+			REM here we save imageA
+			NameimageA$=pathfield$+nightcode$+"-"+coord$+"_"+Astername$+"-"+numero$
+			savefit imgA NameimageA$
+			sub imgA bias
+			div imgA flat coefflat
+			NameimageA$=ppathbin1field$+nightcode$+"-"+coord$+"_"+Astername$+"-"+numero$
+			// recentering the image on imgref
+			duplicate imgA imgtmp
+			if defaultbinning=1 then
+				window imgtmp X1QF Y1QF X2QF Y2QF		
+			else
+				window imgtmp X18F Y18F X28F Y28F		
+			endif
+			auto_register imgtmp imgref dx dy
+			strf dx 1 dx$
+			strf dy 1 dy$
+			line$="dx = "+dx$+" dy = "+dy$
+			gosub addlogfile:
+			translate imgA dx dy
+			savefit imgA NameimageA$
+			binningreduce imgA 2 2
+			print "binning done"
+			NameimageA$=ppathbin2field$+nightcode$+"-"+coord$+"_"+Astername$+"-"+numero$
+			print NameimageA$
+			savefit imgA NameimageA$
+			line$="Image "+NameimageA$+" done"
+			gosub addlogfile:
+			close imgA
+			close imgtmp
+			waitForEndExposure_EX detector_number 
+			REM Recovering the image in order to save it
+			getLastImageExposure_EX detector_number imgB
+			autovisu imgB
+			line$="Exposure number "+j$+" finished"
+			gosub addlogfile:
+			GetCCDTemperature_Ex Detector_number 0 CMOSTemperature
+			strf CMOSTemperature 1 CMOSTemperature$
+			line$="CCD temperature is :"+CMOSTemperature$
+			gosub addlogfile:
+			currentimage=imageA
+		endif
+	endif
+next j
+// procédure à la fin d'un champ (on a terminé les n images du champ)
+numero=j-1
+str numero numero$
+REM saving the last image
+if currentimage=imageB then
+	REM on sauve l'image A
+	NameimageA$=pathfield$+nightcode$+"-"+coord$+"_"+Astername$+"-"+numero$
+	savefit imgA NameimageA$
+	sub imgA bias
+	// div imgA flat coefflat
+	NameimageA$=ppathbin1field$+nightcode$+"-"+coord$+"_"+Astername$+"-"+numero$
+	// recentering the image on imgref
+	duplicate imgA imgtmp
+	if defaultbinning=1 then
+		window imgtmp X1QF Y1QF X2QF Y2QF		
+	else
+		window imgtmp X18F Y18F X28F Y28F		
+	endif
+	auto_register imgtmp imgref dx dy
+	strf dx 1 dx$
+	strf dy 1 dy$
+	line$="dx = "+dx$+" dy = "+dy$
+	gosub addlogfile:
+	translate imgA dx dy
+	savefit imgA NameimageA$
+	binningreduce imgA 2 2
+	NameimageA$=ppathbin2field$+nightcode$+"-"+coord$+"_"+Astername$+"-"+numero$
+	savefit imgA NameimageA$
+	GetCCDTemperature_Ex Detector_number 0 CMOSTemperature
+	strf CMOSTemperature 1 CMOSTemperature$
+	line$="CCD temperature is :"+CMOSTemperature$
+	gosub addlogfile:
+	line$="Image "+NameimageA$+" done"
+	gosub addlogfile:
+else
+	REM on sauve l'image B
+	NameimageB$=pathfield$+nightcode$+"-"+coord$+"_"+Astername$+"-"+numero$
+	savefit imgB NameimageB$
+	sub imgB bias
+	// div imgB flat coefflat
+	NameimageB$=ppathbin1field$+nightcode$+"-"+coord$+"_"+Astername$+"-"+numero$
+	// recentering the image on imgref
+	duplicate imgB imgtmp
+	if defaultbinning=1 then
+		window imgtmp X1QF Y1QF X2QF Y2QF		
+	else
+		window imgtmp X18F Y18F X28F Y28F		
+	endif
+	auto_register imgtmp imgref dx dy
+	strf dx 1 dx$
+	strf dy 1 dy$
+	line$="dx = "+dx$+" dy = "+dy$
+	gosub addlogfile:
+	translate imgB dx dy
+	savefit imgB NameimageB$
+	NameimageB$=ppathbin2field$+nightcode$+"-"+coord$+"_"+Astername$+"-"+numero$
+	binningreduce imgB 2 2
+	savefit imgB NameimageB$
+	GetCCDTemperature_Ex Detector_number 0 CMOSTemperature
+	strf CMOSTemperature 1 CMOSTemperature$
+	line$="CCD temperature is :"+CMOSTemperature$
+	gosub addlogfile:
+	line$="Image "+NameimageB$+" done"
+	gosub addlogfile:
+endif
+close imgA
+close imgB
+close imgtmp
+close imgref
+
+// On écrit le fichier dans le directory de synchronisation sur e:
+//fichiersync$="C:\Nightimages\fichiersync.txt"
+line$="Writing the synchronisation file on the destination GPUPC:"
+gosub addlogfile:
+
+// Ca c'est le fichier sur le PC local
+fichiersync$="C:\Nightimages\sync\"+nightdate$+"-"+coord$+"_"+Astername$+".txt"
+Open_FileTxt_For_Rewrite syncfile fichiersync$
+if pcgpu=1 then
+	contentsynchfile$="e:\NightImages\ConfirmationImages\"nightdate$+"\bin2\"+nightcode$+"-"+coord$+"_"+Astername$
+endif
+if pcgpu=2 then
+	contentsynchfile$="d:\NightImages\Confirm\"+nightdate$+"\bin2\"+nightcode$+"-"+coord$+"_"+Astername$
+endif
+if pcgpu=3 then
+	contentsynchfile$=defaultdirGPU$+nightdate$+"\bin2\"+nightcode$+"-"+coord$+"_"+Astername$
+endif
+
+WriteFileTxt syncfile contentsynchfile$
+closefiletxt syncfile
+
+// le fichier est crée, on le copy sur le bon directory du bon PCGPU
+REM preparation of the bat file to send info to PCGPU
+origin$=fichiersync$
+if pcgpu=1 then
+	destination$="\\PCGPU\e\NightImages\sync\"
+endif
+if pcgpu=2 then
+	destination$="\\PCGPU2\d\NightImages\sync\"
+endif
+if pcgpu=3 then
+	destination$=defaultSyncDir$+nightdate$+"\bin2\"+nightcode$+"-"+coord$+"_"+Astername$
+endif
+
+syncfile$="C:\Nightimages\syncfile.bat"
+message$="copy "+origin$+" "+destination$
+Open_FileTxt_For_Rewrite syncfile syncfile$
+WriteFileTxt syncfile message$
+CloseFileTxt syncfile
+execexternal syncfile$ ""
+return
+
+REM *******************************************************
+REM Initialisation of camera and telescope
+REM *******************************************************
+startnight:
+waittillbegintime:
+Now Date
+GETRADECSUN  Date  AlphaS  DeltaS  sunelevation
+Datetostr Date Date$
+RAD_TO_DEC sunelevation ElevationS$
+if sunelevation>0
+	position$="above"
+else
+	position$="below"
+endif
+line$="It is : "+Date$+" the sun is at "+ElevationS$+" degrees "+position$+" the horizon"
+gosub addlogfile:
+if sunelevation>elevsunstartinitnight
+	line$="Waiting one minute..."
+	gosub addlogfile:
+	delay 60000
+	WAITFORENDDELAY
+	goto waittillbegintime:
+endif
+
+// We set power on for the telescope, camera and focuser and wait for the focuser to start (60s)
+line$="...."
+gosub addlogfile:
+execexternal PowerOnCmd$ ""
+delay PowerOnDelayMS
+waitforenddelay
+
+line$="Opening the clamshell, this takes about 30 seconds, please wait...."
+gosub addlogfile:
+// On ouvre la coupole
+execexternal externalRoofOpenCmd$ " "
+delay TimeToMoveRoof
+waitforenddelay
+
+
+
+// Là on suppose que la monture et la caméra sont déjà alimentées, on lance le programme de focuser et on lui laisse 30 secondes pour faire son resetdlgbox
+gosub init_telescope:
+gosub init_camera:
+
+
+REM We now wait for the sun to be below 15°, then start observing.
+waittillstarttime:
+REM if we are running into this the first time
+Now Date
+GETRADECSUN  Date  AlphaS  DeltaS  sunelevation
+Datetostr Date Date$
+RAD_TO_DEC sunelevation ElevationS$
+if sunelevation>0
+	position$="above"
+else
+	position$="below"
+endif
+line$="It is : "+Date$+" the sun is at "+ElevationS$+" degrees "+position$+" the horizon"
+gosub addlogfile:
+if sunelevation>elevsunstartbegnight
+	line$="Waiting one minute..."
+	gosub addlogfile:
+	delay 60000
+	WAITFORENDDELAY
+	goto waittillstarttime:
+endif
+line$="The sun is now "+ElevationS$+" degrees below horizon, starting the observations"
+gosub addlogfile:
+// On sort le télescope du parking et on fait un recentrage astrométrique
+// On veut pointer 1h apres le méridien et au zenith
+line$="Moving the telescope out of park position and taking a centering frame"
+gosub addlogfile:
+
+now date
+SIDERALTIME date Longitude SidTime
+
+
+// On met le telescope au zenith
+RAdeparkrad=SidTime
+Decdeparkrad=-23*torad
+RAD_TO_RA RAdeparkrad RAdepark$
+RAD_TO_DEC Decdeparkrad DecdePark$
+line$="On pointe le telescope au zenith"
+gosub addlogfile:
+line$="RA 2000.0 = "+RAdepark$
+gosub addlogfile:
+line$="DEC 2000.0 = "+Decdepark$
+gosub addlogfile:
+
+movetelescope RAdeparkrad Decdeparkrad
+WaitForEndMoveTelescope
+currentRArad=RAdeparkrad
+currentDecrad=Decdeparkrad
+destRArad=RAdeparkrad
+destDecrad=Decdeparkrad
+gosub recentrageastrometrique:
+return
+
+
+
+REM *******************************************************
+REM Recentrage astrométrique
+REM *******************************************************
+
+recentrageastrometrique:
+// On cale le foyer
+GET_FOCUSER_TEMP FocTemp
+strf FocTemp 2 FocTemp$
+line$="Current temperature is : "+FocTemp$
+gosub addlogfile:
+
+// On calcule la position approximative du foyer en fonction de la température
+// L'équation est (si la température sort bien en kelvin et non en °C )
+//currentfoc=(focbasis+constfoctemp*FocTemp) 
+// focbasis=7.6131
+// constfoctemp=0.0841
+// temp = 290
+// currentfoc=
+if currentfoc=0 then
+	currentfoc=(focbasis+constfoctemp*FocTemp) 
+endif
+strf currentfoc 2 currentfoc$
+line$="Expected focus value is : "+currentfoc$
+
+gosub addlogfile:
+set_focuser currentfoc
+delay 2000
+waitforenddelay
+set_focuser currentfoc
+delay 2000
+waitforenddelay
+
+Get_Telescope_Position_App  CurrentRArad  CurrentDecrad
+RAD_TO_RA CurrentRArad Alpha$    
+RAD_TO_DEC CurrentDecrad Delta$
+line$="In theory, the telescope is at RA: "+Alpha$+" and DEC: "+Delta$
+GOSUB addlogfile:
+
+line$="Taking a centering frame"
+gosub addlogfile:
+// En premier on prépare la caméra pour une expo astrométrique
+Setwindow_EX 1 X1HF Y1HF X2HF Y2HF
+BinX=4
+BinY=4
+SetbinningX_EX 1 BinX
+SetbinningY_EX 1 BinY
+// On lance la pose
+startExposure_EX Detector_number exptimerecentragems
+waitForEndExposure_EX Detector_number
+REM Recovering the image in order to save it
+getLastImageExposure_EX Detector_number imgastrom
+// On regarde où on est...
+// getalpha imgastrom centrealpha
+// getdelta imgastrom centredelta
+line$="Tentative d'astrometrie locale..."
+gosub addlogfile:
+
+//PLATESOLVE_ASTROM_ASTAP imgastrom 60 4 30 Valid centrealpha centredelta
+FIND_ALLSKY_POSITION imgastrom 60 60 5 Cat$ Valid
+if Valid=1 then
+	getalpha imgastrom centrealpha
+	getdelta imgastrom centredelta
+	CALIBRATE_TELESCOPE centrealpha centredelta
+	line$="Successful recalibration of the telescope.(Findallsky)(FIND_ALLSKY_POSITION func)"
+	gosub addlogfile:
+	RAD_TO_RA centrealpha centrealpha$
+	RAD_TO_DEC centredelta centredelta$
+	RAD_TO_RA destRArad Alpha$    
+	RAD_TO_DEC destDecrad Delta$
+	line$="The telescope is at RA: "+centrealpha$+" and DEC: "+centredelta$
+	gosub addlogfile:
+	line$="Moving telescope to RA: "+alpha$+" and DEC: "+delta$
+	gosub addlogfile:
+	movetelescope destRArad destDecrad
+	WaitForEndMoveTelescope
+	erreurAD=destRArad-centrealpha
+	// Pour eviter les erreurs en 23h58m, etc...
+	if erreurAD<0 then
+		signeerreurAD$="-"
+		abs erreurAD erreurAD
+	else
+		signeerreurAD$="+"
+	endif
+	RAD_TO_RA erreurAD erreurAD$
+	erreurDEC=destDecrad-centredelta
+	RAD_TO_DEC erreurDEC erreurDEC$
+	print "error in AD : " signeerreurAD$ erreurAD$ " error in Dec : " erreurDEC$
+	abs erreurAD erreurAD
+	abs erreurDEC erreurDEC
+	erreurdepointagerad=(erreurAD*erreurAD)+(erreurDEC*erreurDEC)
+	sqr erreurdepointagerad erreurdepointagerad
+	erreurdepointageminutes=erreurdepointagerad*TODEG*60
+	str erreurdepointageminutes erreurdepointageminutes$
+	line$="The telescope was at "+erreurdepointageminutes$+" arc minutes of the desired position"
+	gosub addlogfile:
+	REM une minute d'arc = 0.0003 radians
+	if erreurdepointagerad>0.0003 then
+		line$="The distance between where the telescope was and where the telescope was supposed to be is too large"
+		gosub addlogfile:
+		line$="Moving the telescope"
+		gosub addlogfile:
+		movetelescope destRArad destDecrad
+		WaitForEndMoveTelescope
+		line$="We launch astrometric calibration again"
+		gosub addlogfile:
+		close imgastrom
+		gosub recentrageastrometrique:
+	endif
+else
+	line$="Didn't work, trying with astrometry.net"
+	gosub addlogfile:
+	PLATESOLVE_ASTROM_NET imgastrom Valid centrealpha centredelta
+	STR Valid Valid$
+	// print "Valid="+Valid$
+	if Valid=1 then
+		gosub recaltel:
+	else
+		line$="Astrometry.NET failed."
+		gosub addlogfile:
+	endif
+endif
+close imgastrom
+// on remet les choses en ordre 
+SetbinningX_EX 1 defaultbinning
+SetbinningY_EX 1 defaultbinning
+SetWindowFullFrame_Ex 1
+
+return
+
+REM *******************************************************
+REM positionnement du télescope en début de nuit
+REM *******************************************************
+
+positionnementastrometrique:
+// On cale le foyer
+GET_FOCUSER_TEMP FocTemp
+strf FocTemp 2 FocTemp$
+line$="Current temperature is : "+FocTemp$
+gosub addlogfile:
+
+// On calcule la position approximative du foyer en fonction de la température
+// L'équation est (si la température sort bien en kelvin et non en °C )
+//currentfoc=(focbasis+constfoctemp*FocTemp) 
+if currentfoc=0 then
+	currentfoc=(focbasis+constfoctemp*FocTemp) 
+endif
+strf currentfoc 2 currentfoc$
+line$="Expected focus value is : "+currentfoc$
+gosub addlogfile:
+set_focuser currentfoc
+delay 2000
+waitforenddelay
+set_focuser currentfoc
+delay 2000
+waitforenddelay
+
+
+line$="Taking a centering frame"
+gosub addlogfile:
+// En premier on prépare la caméra pour une expo astrométrique
+Setwindow_EX 1 X1QF Y1QF X2QF Y2QF
+SetbinningX_EX 1 2
+SetbinningY_EX 1 2
+// On lance la pose
+startExposure_EX Detector_number exptimerecentragems
+waitForEndExposure_EX Detector_number
+REM Recovering the image in order to save it
+getLastImageExposure_EX Detector_number imgastrom
+// On regarde où on est...
+
+// On appelle PlateSolve2 pour la résolution astrométrique
+GOSUB PlateSolve2:
+
+// on remet les choses en ordre 
+SetbinningX_EX 1 defaultbinning
+SetbinningY_EX 1 defaultbinning
+SetWindowFullFrame_Ex 1
+
+return
+
+REM ***************************************************
+REM repositionnement du télescope
+REM ***************************************************
+
+recaltel:
+CALIBRATE_TELESCOPE centrealpha centredelta
+line$="Successful recalibration of the telescope"
+gosub addlogfile:
+RAD_TO_RA centrealpha centrealpha$
+RAD_TO_DEC centredelta centredelta$
+line$="The telescope is at RA: "+centrealpha$+" and DEC: "+centredelta$
+gosub addlogfile:
+RAD_TO_RA currentRArad currentRA$
+RAD_TO_DEC currentDecrad currentDec$
+line$="Moving telescope to RA: "+currentRA$+" and DEC: "+currentDec$
+gosub addlogfile:
+line$=" "
+gosub addlogfile:
+delay 3000
+WaitforEndDelay
+MOVETELESCOPE currentRArad currentDecrad
+WaitForEndMoveTelescope
+line$="Waiting 3 seconds for the mount to settle... "
+REM si l'astrometrie est trop loin, on relance une calibration
+gosub addlogfile:
+erreuralpharad=centrealpha-currentRArad
+abs erreuralpharad erreuralpharad
+erreurdeltarad=centredelta-currentDecrad
+abs erreurdeltarad erreurdeltarad
+erreurdepointagerad=(erreuralpharad*erreuralpharad)+(erreurdeltarad*erreurdeltarad)
+sqr erreurdepointagerad erreurdepointagerad
+erreurdepointageminutes=erreurdepointagerad*TODEG*60
+str erreurdepointageminutes erreurdepointageminutes$
+line$="The telescope was at "+erreurdepointageminutes$+" arc minutes of the desired position"
+gosub addlogfile:
+
+REM une minute d'arc = 0.0003 radians
+if erreurdepointagerad>0.0003 then
+	line$="The distance between where the telescope was and where the telescope was supposed to be is too large"
+	gosub addlogfile:
+	line$="We launch astrometric calibration again"
+	gosub addlogfile:
+	gosub recentrageastrometrique:
+endif
+
+return
+
+
+REM ***************************************************
+REM Computing the end of night time.
+REM ***************************************************
+endnighttime:
+REM first check if we are past noon or not.
+
+now year month day hour minute second  MS
+
+REM if past noon we calculate the end of the following night
+REM and we put the hours at 4 to start iteration
+
+if hour>12 then
+	day=day+1
+endif
+hour=4
+ENCODEDATETIME  year month day hour minute second MS  Date
+begincomputeendnight:
+REM 0.003472=5 minutes, we iterate 5 minutes after 5 minutes and calculate sun height
+date=date+0.003472
+
+GETRADECSUN  date  AlphaS  DeltaS  sunelevation
+sunelevationdeg=sunelevation*180/pi
+REM DateToStr date date$
+REM print "date = " date$ " sun elevation = " sunelevationdeg
+
+if sunelevationdeg<(-12) then
+	goto begincomputeendnight:
+endif
+endofnighttime=date
+DATETOSTR endofnighttime endofnighttime$
+strf sunelevationdeg 1 sunelevationdeg$
+line$="End of night is : "+endofnighttime$+" UT at sun elevation : "+sunelevationdeg$+" degrees"
+gosub addlogfile:
+
+REM We have the time of the end of the night, so we can get back
+return
+
+
+REM *******************************************************
+REM Initializing the telescope
+REM *******************************************************
+init_telescope:
+
+
+line$="Connecting to the telescope"
+gosub addlogfile:
+// A modifier
+now date
+SIDERALTIME Date Longitude TSL
+// On a parque à un angle horaire une heure avant le meririen et +66 degres
+//Anglehorpark=15*TORAD
+//Decpark=66*TORAD
+//RA=TSL-Anglehorpark
+//RAD_TO_RA RA RApark$
+
+// taken from Telescope.config.pgm file (JMM)
+Anglehorpark=AHpark
+RAD_TO_RA Anglehorpark Anglehorpark$
+RAD_TO_DEC Decpark DecPark$
+
+
+OPEN_TELESCOPE_DEVICES Anglehorpark DecPark
+REM waiting ten seconds for the focuser to reset
+print " on reset le focuser"
+Reset_Focuser  20
+
+unpark_telescope
+line$="Anglehorpark = "+Anglehorpark$
+gosub addlogfile:
+line$="RA 2000.0 = "+RApark$
+gosub addlogfile:
+line$="DEC 2000.0 = "+Decpark$
+gosub addlogfile:
+calibrate_telescope RA DECpark
+REM putting focuser at the average correct value
+line$="Moving the focuser to the expected position"
+gosub addlogfile:
+// tentative de reset du focuser
+// set_focuser 0
+delay 5000
+waitforenddelay
+set_focuser currentfoc
+delay 5000
+waitforenddelay
+
+return
+
+
+REM *******************************************************
+REM Subroutine to initialize the camera, contains informations and settings of the camera
+REM *******************************************************
+
+init_camera:
+REM We start the camera
+line$="Connecting the camera"
+gosub addlogfile:
+INIT_CCD_CAMERA_EX  Detector_number Valid  cameraerror$
+if Valid=2 then
+	SetbinningX_EX 1 defaultbinning
+	SetbinningY_EX 1 defaultbinning
+	SetWindowfullframe_ex Detector_number
+	
+	// Là on doit descendre genre 5° toutes les 2 minutes. Donc 2.5° par minute.
+	// Ou on décide de descendre en température en 10 minutes, auquel cas on refroidit de deltaT/10 par minute
+	GETCCDTEMPERATURE_EX  Detector_number 0 Starttemperature
+	strf Starttemperature 1 Starttemperature$
+	line$="Start temperature is : "+Starttemperature$
+	gosub addlogfile:
+	// Si la  température de la caméra est positive, on commence en prétendant être à 0, histoire de forcer la puissance pendant les premières minutes
+	if Starttemperature>0 then
+		Starttemperature=0
+	endif
+	strf Detectortemperature 1 Detectortemperature$
+	line$="Desired temperature is : "+Detectortemperature$
+	gosub addlogfile:
+	deltaT=Starttemperature-Detectortemperature
+	deltaTperminute=2.5
+	coolingtime=deltaT/deltaTperminute
+	strf deltaT 1 deltaT$
+	strf deltaTperminute 1 deltaTperminute$
+	strf coolingtime 1 coolingtime$
+	line$="Delta T is : "+deltaT$
+	gosub addlogfile:
+	line$="delta T per minute is 2.5 degrees, so cooling time will be : "+coolingtime$+" minutes"
+	gosub addlogfile:
+	for i=1 to coolingtime
+		Currenttemperature=Starttemperature-(i*deltaTperminute)
+		round Currenttemperature Currenttemperature
+		SETCCDTEMPERATURE_EX Detector_number 1 Currenttemperature
+		strf Currenttemperature 1 Currenttemperature$
+		if Currenttemperature<Detectortemperature then
+			goto endcooling1:
+		endif
+		str i-1 num$
+		line$=num$+" minute, CCD going down to "+Currenttemperature$+" degrees"
+		gosub addlogfile:
+		delay 60000
+		waitforenddelay
+	next i
+endcooling1:
+SETCCDTEMPERATURE_EX Detector_number 1 Detectortemperature	
+else
+REM The camera didn't initialize correctly
+	line$=cameraerror$
+	gosub addlogfile:
+endif	
+return
+
+
+
+REM *******************************************************
+REM End of the night procedures
+REM *******************************************************
+
+endnight:
+REM closing images
+close bias
+close flat
+
+line$="End of the sequence, at the end of the night, closing the telescopes"
+gosub addlogfile:
+// On rentre dans une boucle qui attend la fin de la nuit avant d'arrêter l'observatoire, de façon à relancer des champs
+// si nécessaire
+now date
+GETRADECSUN  date  AlphaS  DeltaS  sunelevation
+sunelevationdeg=sunelevation*todeg
+strf sunelevationdeg 1 sunelevationdeg$
+// on formatte sunelevation
+line$="The sun is "+sunelevationdeg$+" degrees below the horizon, waiting one minute..." 
+gosub addlogfile:
+remainingnighttime=endofnighttime-date
+remaininghoursdecimal=remainingnighttime*24
+int remaininghoursdecimal remaininghours
+frac remaininghoursdecimal remaininghoursdecimal
+remainingminutesdecimal=remaininghoursdecimal*60
+str remaininghours remaininghours$
+strf remainingminutesdecimal 2 remainingminutesdecimal$
+if remaininghours<2 then
+	line$="Another "+remaininghours$+" hour and "+remainingminutesdecimal$+" minutes before the end of the night"
+else
+	line$="Another "+remaininghours$+" hours and "+remainingminutesdecimal$+" minutes before the end of the night"
+endif
+gosub addlogfile:
+if date<endofnighttime then
+	delay 60000
+	waitforenddelay
+	gosub endnight:
+endif
+line$="Waiting 10 minutes for the camera to warm up"
+gosub addlogfile:
+
+REM going up in temperature, 10 minutes to go back to 0°C
+warmingtime=10
+GETCCDTEMPERATURE_EX 1 0 Starttemperature
+deltaTperminute=Starttemperature/(-10)
+for i=1 to warmingtime
+	str i i$
+	nexttemperature=Starttemperature+(i*deltaTperminute)
+	round nexttemperature nexttemperature
+	if nexttemperature>0 then
+		goto endwarming:
+	endif
+	delay 60000
+	waitforenddelay
+	SETCCDTEMPERATURE_EX 1 1 nexttemperature
+	strf nexttemperature 1 nexttemperature$
+	line$=i$+" minute, CCD going up to "+nexttemperature$+" degrees"
+	gosub addlogfile:
+next i
+endwarming:
+CLOSE_CCD_CAMERA
+REM Closing the telescope
+line$="parking telescope, please wait"
+gosub addlogfile:
+REM print "start the script again if you want to continue..."
+REM pause
+// le télescope doit être parqué à 8° de haut et azimut de 5°
+// la fonction park_telescope prends l'angle horaire et la déclinaison de parking (en radians)
+// Il faut convertir tout ça pour trouver les bons chiffres.
+// azimut=5*TORAD
+// elevation=8*TORAD
+
+NOW date
+SIDERALTIME Date Longitude TSL
+// On parque à un angle horaire de une heure, donc 15°
+Anglehor=15*TORAD
+Decpark=66*TORAD
+PARK_TELESCOPE AngleHor Decpark
+
+
+// park_telescope_elvaz azimut elevation
+CLOSE_TELESCOPE_DEVICES
+delay 60000
+waitforenddelay
+// On ferme la coupole
+line$="Closing the dome"
+gosub addlogfile:
+// On ouvre le toit
+execexternal "C:\Users\AlainXeon\Desktop\VBscript - coupole RASA\CloseDome.bat" " "
+gosub backup:
+end
+return
+
+
+
+REM *******************************************************
+REM procédure d'écriture du log
+REM *******************************************************
+
+addlogfile:
+Dirlogfile$="C:\Nightimages\logs\"+nightdate$+"-logfile.txt"
+
+FileExists Dirlogfile$ YesNo
+if YesNo=0 then
+	Open_FileTxt_For_Rewrite  logfile Dirlogfile$
+	//WriteFileTXT logfile "Log file"
+	CloseFileTXT logfile
+ENDIF
+
+
+Open_FileTxt_For_Append logfile Dirlogfile$
+NOW datelog
+DateToStr datelog datelog$
+print line$
+line2$=datelog$+": "+line$
+WriteFileTxt logfile line2$
+CloseFileTxt logfile
+RETURN
+
+REM *******************************************************
+REM autofocus par gaussienne 
+REM *******************************************************
+autofocusgauss:
+nbstarsmax=0
+
+line$="Performing autofocus..."
+gosub addlogfile:
+
+// On réalise en premier une image en 8ème de frame avec currentfoc, on compte les étoiles et on arrange la taille de la fenêtre
+// On réalise en premier une image en quart de frame avec currentfoc, on compte les étoiles et on arrange la taille de la fenêtre
+SetbinningX_EX Detector_number 3
+SetbinningY_EX Detector_number 3
+Setwindow_EX Detector_number X1HF Y1HF X2HF Y2HF
+
+
+GET_FOCUSER_TEMP FocTemp
+FocTempC=FocTemp-273
+strf FocTempC 2 FocTempC$
+line$="Current temperature is : "+FocTempC$+" Celsius degrees"
+gosub addlogfile:
+
+// On calcule la position approximative du foyer en fonction de la température
+// L'équation est (si la température sort bien en kelvin et non en °C )
+//currentfoc=(focbasis+constfoctemp*FocTemp) 
+// La première fois on calcule une approximation de la foc, ensuite on utilise la valeur calculée précédemment
+
+// on a focbasis=7.6131 et constfoctemp=0.0841
+// si foctemp vaut 283.49 on a 
+if currentfoc=0 then
+	currentfoc=(focbasis+constfoctemp*FocTemp) 
+	strf currentfoc 2 currentfoc$
+endif
+line$="Expected focus value is : "+currentfoc$
+gosub addlogfile:
+
+
+refoc:
+
+FocMinDep=currentfoc-deltafoc
+FocMaxDep=currentfoc+deltafoc
+strf focmindep 2 focmindep$
+strf focmaxdep 2 focmaxdep$
+line$="Doing focusing, going from "+FocMinDep$+" to "+Focmaxdep$
+gosub addlogfile:
+
+// Ensuite on fait des images de focmindep à FocMaxDep en faisant un getstarlist et en gardant le nbstars[i]
+// On se cale tout d'abord sur FocMinDep
+// On amène le focuser à la valeur minimale avant de faire la première pose
+set_focuser FocMinDep-0.3
+delay 1000
+waitforenddelay
+set_focuser FocMinDep
+// On créé le fichier où l'on va stocker les données
+// Mes Documents\Gnuplot\GnuplotFocData.txt
+dirgnu$="C:\ImagesNuit\Tools\Gnuplot\GnuplotFocData.txt"
+Open_FileTxt_For_Rewrite gaussfile dirgnu$
+
+for Foc=FocMinDep FocMaxDep FocStep
+	set_focuser Foc
+	strf Foc 4 focvalue$
+	startExposure_EX Detector_number FocExptimeMS
+	waitForEndExposure_EX Detector_number
+	getLastImageExposure_EX Detector_number imgfoc
+	REM now cataloguing the image, removing the brighter stars, not taking into account the faintest stars
+	REM and calculating the distance to the center for the remaining ones.
+	// median imgfoc 2 1
+	// delay 8000
+	// waitforenddelay
+	GETSTARLIST  imgfoc  Resol  NbStars  ListX  ListY  ListFlux
+	str NbStars NbStars$
+	if NbStars>nbstarsmax then
+		nbstarsmax=NbStars
+		maxfocvalue=Foc
+	endif
+	line$="Detected "+NbStars$+" stars at focus value : "+focvalue$
+	gosub addlogfile:
+	focline$=focvalue$+" "+NbStars$
+	WriteFileTxt gaussfile focline$
+	close imgfoc
+next Foc
+CloseFileTxt gaussfile
+
+line$="Gaussfile generated"
+gosub addlogfile:
+
+
+delay 500
+waitforenddelay
+defaultdir$="C:\ImagesNuit\Tools\Gnuplot\"
+gnuplot$="C:\Program Files\gnuplot\bin\gnuplot.exe"
+gnuplotVars$=defaultdir$+"gnuplotVars.txt"
+gnuplotinput$=defaultdir$+"gnuplotFocData.txt"
+gnuplotscript$=defaultdir$+"gnuplotFocCurveGaussianFit.plt"
+
+
+
+// Run Gnuplot to perform gaussian curve fitting
+FILEEXISTS gnuplotVars$ YesNo
+if YesNo=true then
+	delete gnuplotVars$
+endif
+EXECEXTERNAL gnuplot$ gnuplotscript$
+gosub readGaussianFit:
+str focpointgauss focpointgauss$
+line$="Focalisation value obtained : "+focpointgauss$
+gosub addlogfile:
+
+
+difffoc=focpointgauss-maxfocvalue
+abs difffoc difffoc
+if difffoc>ecartmaxfoc then
+	currentfoc=maxfocvalue
+	goto refoc:
+endif
+line$="Moving focuser...."
+gosub addlogfile:
+
+
+setwindowfullframe_ex detector_number
+currentfoc=focpointgauss
+set_focuser FocMinDep
+delay 1000
+waitforenddelay
+set_focuser focpointgauss
+
+// writing the foc file
+line$="Writing the foc file"
+gosub addlogfile:
+REM writing the foc logfile
+REM ne pas recréer focfile$ si ça existe déjà.
+REM on la met sur le directory principal
+Dirfocfile$="C:\Nightimages\"+"focfile.txt"
+FileExists  Dirfocfile$  YesNo
+if YesNo=TRUE then
+	// the file already exits, we append
+	Open_FileTxt_For_Append focfile Dirfocfile$
+else
+	// the file doesn't exist, we create it.
+	Open_FileTxt_For_Rewrite  focfile Dirfocfile$
+endif
+// We prepare the line to be written
+// It contains the date and the time, then the temperature then the zenital distance and finally foc value
+now date
+DateToStr  Date  Date$
+Get_Focuser_Temp  Temp
+str temp temp$
+GetHeight currentRArad currentDecrad Date Longitude Latitude Elevation
+str elevation elevation$
+Get_Focuser_Pos  Pos  Status
+str Pos pos$
+// print date$
+// print temp$
+// print elevation$
+// print pos$
+line$=date$+" "+temp$+" "+elevation$+" "+pos$
+WriteFileTxt focfile line$
+CloseFileTxt focfile
+
+goto focbasisfin:
+// On stocke la valeur de foc obtenue pour le premier champ
+if numberoffieldstaken=0 then
+	focbasis=currentfoc+(pentetempfoc*FocTemp) 
+	str focbasis focbasis$
+	if numberoffieldstaken=0 then
+		Open_FileTxt_For_Rewrite focbasisfile focbasisfile$
+		WriteFileTxt focbasisfile focbasis$
+		closefiletxt focbasisfile
+	endif
+endif
+focbasisfin:
+incr numberoffieldstaken
+
+// Setting lastfocvalue
+// on remet les choses en ordre 
+SetbinningX_EX 1 defaultbinning
+SetbinningY_EX 1 defaultbinning
+SetWindowFullFrame_Ex 1
+
+return
+
+
+REM *************************************************************
+REM Lecture du fichier gnuplot et extraction de la valeur de foc
+REM *************************************************************
+readGaussianFit:
+OK=-1
+waitGnuplotVars:
+DELAY 1000
+WAITFORENDDELAY
+FILEEXISTS gnuplotVars$ YesNo
+if YesNo=false then
+	GOTO waitGnuplotVars:
+endif
+DELAY 1000
+WAITFORENDDELAY
+Open_FileTXT_For_Read gnuVars gnuplotVars$
+sep$=" "
+gnuDataParse:
+ENDOFFILE gnuVars result
+if result=false then
+	ReadFileTXT gnuVars tmp$
+	CUTSTR tmp$ sep$ 1 varname$
+	if varname$="focpointgauss" then
+		CUTSTR tmp$ sep$ 3 varval$
+		VAL varval$ focpointgauss
+		OK=1
+		GOTO foundVar:
+	else 
+		OK=0
+		GOTO gnuDataParse:
+	endif
+endif
+foundVar:
+CloseFileTXT gnuVars
+RETURN
+
+
+REM ************************************************************************************************************
+REM Subroutine permettant de savoir s'il reste assez de temps pour faire encore une pose avant la fin de la nuit
+REM ************************************************************************************************************
+
+
+checkenoughtimeleft:
+now date 
+datetostr date date$
+line$="The date is :"+date$
+gosub addlogfile:
+// remaining observing time is endofnighttime-date 
+nighttimeleft=endofnighttime-date
+nighttimeleftseconds=nighttimeleft*24*3600
+decimalhoursleft=nighttimeleft*24
+frac decimalhoursleft decimalminutesleft
+decimalminutesleft=decimalminutesleft*60
+int decimalhoursleft decimalhoursleft
+str decimalhoursleft decimalhoursleft$
+strf decimalminutesleft 2 decimalminutesleft$
+if decimalhoursleft<2 then
+	line$="Another "+decimalhoursleft$+" hour and "+decimalminutesleft$+" minutes before the end of the night"
+else
+	line$="Another "+decimalhoursleft$+" hours and "+decimalminutesleft$+" minutes before the end of the night"
+endif
+gosub addlogfile:
+
+if exptimenumberofimages>nighttimeleftseconds then
+	//Il n'y a pas assez de temps pour faire une série d'images, on ferme la boutique
+	gosub endnight:
+else
+	return
+endif
+
+
+
+REM ***************************************************************
+REM Subroutine lançant le backup des fichiers sur e: en fin de nuit
+REM ***************************************************************
+
+backup:
+// On prépare un fichier .bat contenant les instructions pour zipper le directory de la nuit
+// Et copier le fichier zippé sur E:
+// Puis on lance le .bat
+// Le directory de la nuit est path$
+backupline1$="cd C:\Program^ Files\7-Zip\"
+backupline2$="7z a C:\Nightimages\Backup\"+nightdate$+".zip -r C:\Nightimages\"+nightdate$+"\*.*"
+//backupline3$="xcopy C:\Nightimages\Backup\"+nightdate$+".zip E:\Nightimages\Backup\"
+backupfile$="C:\Nightimages\backup.bat"
+Open_FileTxt_For_Rewrite backup backupfile$
+WriteFileTxt backup backupline1$
+WriteFileTxt backup backupline2$
+// WriteFileTxt backup backupline3$
+CloseFileTxt backup
+execexternal backupfile$ ""
+
+return
+
+
+REM ***************************************************************
+REM Boucle d'attente d'un fichier de confirmation et si trouvé lançant les acquisitions
+REM ***************************************************************
+
+waittoconfirm:
+line$="Stopping drive while waiting for a new confirmation file"
+gosub addlogfile:
+STOPTELESCOPE
+delay 3000
+waitforenddelay
+// Boucle d'attente
+// On teste pour savoir s'il reste du temps d'observation
+str numerodeconfirmation numerodeconfirmation$
+if numerodeconfirmation<10 then
+	numerodeconfirmation$="0"+numerodeconfirmation$
+endif
+nomdefichierdeconfirmation$=dirconfirm$+"toconf"+numerodeconfirmation$+".txt"
+line$="Waiting for "+nomdefichierdeconfirmation$
+gosub addlogfile:
+
+attentedefichier:
+now date
+gosub checkenoughtimeleft:
+fileexists nomdefichierdeconfirmation$ ouinon
+if ouinon=false
+	print "Nothing to confirm, waiting one minute..."
+	delay 60000
+	waitforenddelay
+	goto attentedefichier:
+endif
+
+// On ouvre le fichier on lit les trois lignes et on déchiffre
+// Dans une boucle on lit Datetime[i], RArad[i] et Decrad[i]
+
+line$="Confirmation file encountered : "+nomdefichierdeconfirmation$
+gosub addlogfile:
+gosub checkenoughtimeleft:
+
+//A modifier, s'il n'y a qu'une seule ligne, c'est la position qu'il faut shooter
+
+Open_FileTxt_For_Read confirmfile nomdefichierdeconfirmation$
+for i=1 3
+	ReadFileTxt confirmfile ligne[i]$
+	str i i$
+	print i ligne[i]$
+	if i=2 then
+		// On teste la fin de fichier, pour faire la différence entre 3 positions à examiner et une seule à prendre
+		if ligne[i]$="" then
+			// Il n'y a qu'une seule ligne dans le fichier, c'est la position qu'il faut prendre
+			multilignes=false
+			print "single line file"
+			goto endreadfile:
+		else
+			// on continue de lire les deux autres lignes et on extrapole la position
+			multilignes=true
+			print "three line file"
+		endif
+	endif
+	REM      1231301 KC2021 02 04.07401 07 37 20.79 -30 55 18.5          19.2 G      W94
+	REM     IGzK1Od KC2021 03 19.19598 12 49 35.00 -32 47 26.0                      W94
+
+	substring ligne[i]$ 6 7 Astername$
+	// on vire les espace après le nom (dans le cas d'un astéroïde numéroté)
+	cutstr Astername$ " " 1 Astername$
+	print Astername$
+	print "i=" i
+	substring ligne[i]$ 16 4 year$
+	substring ligne[i]$ 21 2 month$
+	substring ligne[i]$ 24 8 day$
+	print year$
+	print month$
+	print day$
+	substring ligne[i]$ 33 2 RAhour$
+	substring ligne[i]$ 36 2 RAmin$
+	substring ligne[i]$ 39 5 RAsec$
+	print RAhour$
+	print RAmin$
+	print RAsec$
+	substring ligne[i]$ 45 3 Decdeg$
+	substring ligne[i]$ 49 2 Decmin$
+	substring ligne[i]$ 52 4 Decsec$
+	print Decdeg$
+	print Decmin$
+	print Decsec$
+	substring ligne[i]$ 66 4 mag[i]$
+	print mag[i]$
+	val mag[i]$ mag[i]
+	// encodage de la date
+	val year$ year
+	val month$ month
+	val day$ day
+	frac day dayfrac
+	int day day
+	hour=dayfrac*24
+	frac hour hourfrac
+	int hour hour
+	min=hourfrac*60
+	frac min secfrac
+	int min min
+	sec=secfrac*60
+	frac sec msfrac
+	int sec sec
+	strf msfrac 3 msfrac$
+	val msfrac$ ms
+	if ms=1 then
+		ms=999
+	else
+		ms=ms*1000
+	endif
+	EncodeDateTime year month day hour min sec ms DateTime[i]
+	//  DateTime[i] est la date de prise de vue du cliché i
+	print DateTime[i]
+	DateToStr DateTime[i] date$
+	print date$
+	// Maintenant on trouve RArad et Decrad
+	val RAhour$ RAhour
+	val RAmin$ RAmin
+	val RAsec$ RAsec
+	RAhour=RAhour+(RAmin/60)+(RAsec/3600)
+	RArad[i]=RAhour*15*TORAD
+	val Decdeg$ Decdeg
+	val Decmin$ Decmin
+	val Decsec$ Decsec
+	if Decdeg<0 then
+		signdec=-1
+		abs Decdeg Decdeg
+	else
+		signdec=1
+	endif
+	Decdeg=signdec*(Decdeg+(Decmin/60)+(Decsec/3600))
+	Decrad[i]=Decdeg*TORAD
+	// print " RArad = " RArad[i] " Decrad = " Decrad[i]
+	Str_Rad_To_RA  RArad[i]  cHour$  cMinutes$  cSeconds$
+	STR_Rad_To_DEC  Decrad[i]  cDegree$  cMinutesD$  cSecondsD$
+	RA$=cHour$+":"+cMinutes$+":"+cSeconds$
+	Dec$=cDegree$+":"+cMinutesD$+":"+cSecondsD$
+	line$="The asteroid is currently at RA= "+RA$+" and Dec = "+Dec$
+	gosub addlogfile:
+next i
+endreadfile:
+closefiletxt confirmfile
+if multilignes=true then
+	print "Calculating extrapoled position"
+	// On calcule la vitesse, on estime la position actuelle
+	// Là on a la différence en RA et delta durant deltaT.
+	deltaRArad=RArad[3]-RArad[1]
+	deltaDecrad=Decrad[3]-Decrad[1]
+	deltaT=DateTime[3]-DateTime[1]
+	//print "intervalle entre les deux poses extremes " deltaTparseconde " secondes"
+	// On prend l'heure actuelle
+	now date
+	deltaTactuel=date-DateTime[1]
+	// deltaTactuel est en fraction de jours
+	print "delta T" deltaTactuel
+	destRArad=RArad[1]+(deltaRArad/deltaT)*deltaTactuel
+	destDecrad=Decrad[1]+(deltaDecrad/deltaT)*deltaTactuel
+	Str_Rad_To_RA  destRArad  cHour$  cMinutes$  cSeconds$
+	STR_Rad_To_DEC  destDecrad  cDegree$  cMinutesD$  cSecondsD$
+	RA$=cHour$+":"+cMinutes$+":"+cSeconds$
+	Dec$=cDegree$+":"+cMinutesD$+":"+cSecondsD$
+	mag=(mag[1]+mag[2]+mag[3])/3
+	strf mag 2 mag$
+else
+	// Il n'y a qu'une seule ligne
+	print "Only one line"
+	destRArad=RArad[1]
+	destDecrad=Decrad[1]
+	mag=mag[1]
+	strf mag 2 mag$
+	Rad_To_RA  destRArad RA$
+	Rad_To_DEC  destDecrad Dec$
+endif
+
+line$="The asteroid "+Astername$+" is "+mag$+" magnitude"
+gosub addlogfile:
+line$="Currently at RA = "+RA$+" and Dec = "+Dec$
+gosub addlogfile:
+
+
+// On regarde s'il est observable
+GetHeight destRArad destDecrad date Longitude Latitude Elevation
+if Elevation<0 then
+	line$="The asteroide "+Astername$+" is below the horizon"
+	gosub addlogfile:
+	line$="Stopping the observation"
+	gosub addlogfile:
+	incr numerodeconfirmation
+	goto waittoconfirm:
+else
+	Elevationdeg=Elevation*todeg
+	strf Elevationdeg 2 Elevationdeg$
+	line$="The asteroid "+Astername$+" is "+Elevationdeg$+" degrees above the horizon"
+	gosub addlogfile:
+endif
+GetDistanceToMeridien destRArad date Longitude HAhour
+HArad=HAhour*15*TORAD
+Rad_To_RA HARad Angle_hms$
+if HArad>0
+	line$="The asteroid "+Astername$+" is "+Angle_hms$+" after the meridian"
+	gosub addlogfile:
+else 
+	line$="The asteroid "+Astername$+" is "+Angle_hms$+" before the meridian"
+	gosub addlogfile:
+endif
+SIDERALTIME Date Longitude SidTime
+ComputeAngleHor SidTime destRArad AngleHor
+RAD_TO_RA AngleHor AngleHor$
+PRINT   "Object meridian angle:" AngleHor$
+RAD_TO_RA SidTime SidTime$
+PRINT   "Object meridian angle:" SidTime$
+
+// RETURN_TELESCOPE_TO_SIDEREAL
+gosub acquisition:
+
+// On rajoute l'information de la dernière confirmation dans le toconf de la nuit
+Open_FileTxt_For_Append toconffile Dirtoconffile$
+// On écrit la date et l'heure, puis le numéro de la toconf et le nom de l'objet
+now date
+DateToStr date date$ 
+line$="Writing the toconf file "
+gosub addlogfile:
+line$=date$+" "+nomdefichierdeconfirmation$+" "+Astername$
+gosub addlogfile:
+WriteFileTxt toconffile line$
+CloseFileTxt toconffile
+// On prépare la confirmation suivante et on lance les acquisitions
+incr numerodeconfirmation
+
+goto waittoconfirm:
+return
+
+
+

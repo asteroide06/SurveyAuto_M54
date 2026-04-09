@@ -1,0 +1,187 @@
+
+<style>
+.card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1.25rem; margin-bottom: 1rem; }
+.label { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 6px; }
+.result-code { font-family: var(--font-mono); font-size: 48px; font-weight: 500; letter-spacing: 8px; color: var(--color-text-primary); text-align: center; padding: 1rem 0; }
+.char-breakdown { display: flex; gap: 8px; justify-content: center; margin-top: 8px; }
+.char-pill { background: var(--color-background-secondary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 6px 16px; text-align: center; }
+.char-pill .big { font-family: var(--font-mono); font-size: 28px; font-weight: 500; }
+.char-pill .small { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+input[type=date] { width: 100%; box-sizing: border-box; }
+.decode-input { font-family: var(--font-mono); font-size: 24px; letter-spacing: 6px; text-transform: uppercase; text-align: center; width: 100%; box-sizing: border-box; }
+.decode-result { font-size: 22px; font-weight: 500; text-align: center; padding: 1rem 0; color: var(--color-text-primary); }
+.error { color: var(--color-text-danger); font-size: 13px; text-align: center; min-height: 20px; }
+.ref-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(36px, 1fr)); gap: 4px; margin-top: 8px; }
+.ref-cell { background: var(--color-background-secondary); border-radius: 4px; padding: 4px; text-align: center; font-size: 11px; }
+.ref-cell .k { font-family: var(--font-mono); font-weight: 500; font-size: 13px; }
+.ref-cell .v { color: var(--color-text-secondary); }
+.tabs { display: flex; gap: 8px; margin-bottom: 1rem; }
+.tab { padding: 6px 16px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-tertiary); background: transparent; cursor: pointer; font-size: 14px; color: var(--color-text-secondary); }
+.tab.active { background: var(--color-background-secondary); color: var(--color-text-primary); border-color: var(--color-border-primary); }
+.panel { display: none; }
+.panel.active { display: block; }
+</style>
+
+<div style="padding: 1rem 0;">
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('encode')">Encoder</button>
+  <button class="tab" onclick="switchTab('decode')">Décoder</button>
+  <button class="tab" onclick="switchTab('ref')">Table de référence</button>
+</div>
+
+<div class="panel active" id="panel-encode">
+  <div class="card">
+    <div class="label">Date à encoder</div>
+    <input type="date" id="date-input" />
+  </div>
+  <div class="card">
+    <div class="label">Code 3 caractères</div>
+    <div class="result-code" id="code-out">---</div>
+    <div class="char-breakdown" id="breakdown">
+      <div class="char-pill"><div class="big" id="c-year">-</div><div class="small">Année</div></div>
+      <div class="char-pill"><div class="big" id="c-month">-</div><div class="small">Mois</div></div>
+      <div class="char-pill"><div class="big" id="c-day">-</div><div class="small">Jour</div></div>
+    </div>
+    <div class="error" id="enc-error"></div>
+  </div>
+</div>
+
+<div class="panel" id="panel-decode">
+  <div class="card">
+    <div class="label">Code à décoder (3 caractères)</div>
+    <input class="decode-input" id="decode-input" maxlength="3" placeholder="FCO" />
+  </div>
+  <div class="card">
+    <div class="label">Date décodée</div>
+    <div class="decode-result" id="decode-out">---</div>
+    <div class="error" id="dec-error"></div>
+  </div>
+</div>
+
+<div class="panel" id="panel-ref">
+  <div class="grid2">
+    <div class="card">
+      <div class="label">Années (offset 2020)</div>
+      <div class="ref-grid" id="ref-years"></div>
+    </div>
+    <div class="card">
+      <div class="label">Mois</div>
+      <div class="ref-grid" id="ref-months"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="label">Jours</div>
+    <div class="ref-grid" id="ref-days"></div>
+  </div>
+</div>
+</div>
+
+<script>
+const YEAR_OFFSET = 2020;
+
+function encodeChar(n) {
+  if (n >= 1 && n <= 26) return String.fromCharCode(64 + n);
+  if (n >= 27 && n <= 31) return String(n - 26);
+  return null;
+}
+
+function decodeChar(c) {
+  c = c.toUpperCase();
+  if (c >= 'A' && c <= 'Z') return c.charCodeAt(0) - 64;
+  if (c >= '1' && c <= '5') return parseInt(c) + 26;
+  return null;
+}
+
+function encodeDate(year, month, day) {
+  const y = encodeChar(year - YEAR_OFFSET);
+  const m = encodeChar(month);
+  const d = encodeChar(day);
+  if (!y) throw new Error(`Année ${year} hors plage (2021–2046)`);
+  if (!m) throw new Error(`Mois invalide`);
+  if (!d) throw new Error(`Jour invalide`);
+  return [y, m, d];
+}
+
+function decodeCode(code) {
+  if (code.length !== 3) throw new Error('Le code doit faire exactement 3 caractères');
+  const y = decodeChar(code[0]);
+  const m = decodeChar(code[1]);
+  const d = decodeChar(code[2]);
+  if (!y || y < 1 || y > 26) throw new Error(`Caractère année invalide : ${code[0]}`);
+  if (!m || m < 1 || m > 12) throw new Error(`Caractère mois invalide : ${code[1]}`);
+  if (!d || d < 1 || d > 31) throw new Error(`Caractère jour invalide : ${code[2]}`);
+  return { year: y + YEAR_OFFSET, month: m, day: d };
+}
+
+function updateEncode() {
+  const val = document.getElementById('date-input').value;
+  const err = document.getElementById('enc-error');
+  if (!val) { document.getElementById('code-out').textContent = '---'; err.textContent = ''; return; }
+  const [y, m, d] = val.split('-').map(Number);
+  try {
+    const [cy, cm, cd] = encodeDate(y, m, d);
+    document.getElementById('code-out').textContent = cy + cm + cd;
+    document.getElementById('c-year').textContent = cy;
+    document.getElementById('c-month').textContent = cm;
+    document.getElementById('c-day').textContent = cd;
+    err.textContent = '';
+  } catch(e) {
+    document.getElementById('code-out').textContent = '---';
+    err.textContent = e.message;
+  }
+}
+
+function updateDecode() {
+  const val = document.getElementById('decode-input').value.trim();
+  const err = document.getElementById('dec-error');
+  if (!val) { document.getElementById('decode-out').textContent = '---'; err.textContent = ''; return; }
+  try {
+    const { year, month, day } = decodeCode(val);
+    const months = ['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
+    document.getElementById('decode-out').textContent =
+      `${String(day).padStart(2,'0')} ${months[month-1]} ${year}`;
+    err.textContent = '';
+  } catch(e) {
+    document.getElementById('decode-out').textContent = '---';
+    err.textContent = e.message;
+  }
+}
+
+function buildRef() {
+  const ry = document.getElementById('ref-years');
+  for (let i = 1; i <= 26; i++) {
+    const c = encodeChar(i);
+    const y = i + YEAR_OFFSET;
+    ry.innerHTML += `<div class="ref-cell"><div class="k">${c}</div><div class="v">${y}</div></div>`;
+  }
+  const rm = document.getElementById('ref-months');
+  const mn = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+  for (let i = 1; i <= 12; i++) {
+    rm.innerHTML += `<div class="ref-cell"><div class="k">${encodeChar(i)}</div><div class="v">${mn[i-1]}</div></div>`;
+  }
+  const rd = document.getElementById('ref-days');
+  for (let i = 1; i <= 31; i++) {
+    rd.innerHTML += `<div class="ref-cell"><div class="k">${encodeChar(i)}</div><div class="v">${i}</div></div>`;
+  }
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    const names = ['encode','decode','ref'];
+    t.classList.toggle('active', names[i] === name);
+  });
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+}
+
+document.getElementById('date-input').addEventListener('input', updateEncode);
+document.getElementById('decode-input').addEventListener('input', updateDecode);
+
+const today = new Date();
+const pad = n => String(n).padStart(2,'0');
+document.getElementById('date-input').value =
+  `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
+updateEncode();
+buildRef();
+</script>

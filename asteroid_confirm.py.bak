@@ -1,0 +1,273 @@
+#!/usr/bin/env python3
+"""
+asteroid_confirm.py
+-------------------
+Lit conflist.txt pour trouver le fichier toconfirmXX.txt a traiter,
+calcule la vitesse de deplacement de l'asteroide et extrapole
+sa position (RA, Dec) a l'heure UTC courante.
+
+Format MPC 80 colonnes (indices Python 0-based) :
+  Col 16-32  [15:32] : date     ex: "2023 12 13.89085"
+  Col 33-44  [32:44] : RA       ex: "05 38 57.15"
+  Col 45-56  [44:56] : Dec      ex: "+38 13 37.9"
+
+Usage :
+  python asteroid_confirm.py <conflist.txt> RA
+  python asteroid_confirm.py <conflist.txt> Dec
+
+  Dans NINA : variable = EXITCODE / 10000
+  EXITCODE = 9999 signifie une erreur -> ne pas executer l'observation
+
+Fichiers generes a cote du script :
+  confirm_result.txt  : resultats intermediaires RA/Dec
+  asteroid_confirm.log : journal des operations
+"""
+
+import sys
+import os
+import shutil
+import math
+import logging
+from datetime import datetime, timezone, timedelta
+
+NINA_SCALE   = 10000
+NINA_ERROR   = 9999
+SCRIPT_DIR   = os.path.dirname(os.path.abspath(__file__))
+RESULT_FILE  = os.path.join(SCRIPT_DIR, 'confirm_result.txt')
+LOG_FILE        = os.path.join(SCRIPT_DIR, 'asteroid_confirm.log')
+
+
+# ─────────────────────────────────────────────
+# Logging
+# ─────────────────────────────────────────────
+
+def setup_logging():
+    logging.basicConfig(
+        filename=LOG_FILE,
+        level=logging.INFO,
+        format='%(asctime)s %(levelname)s %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S'
+    )
+
+def log(msg, level='info'):
+    getattr(logging, level)(msg)
+    print(msg)
+
+
+# ─────────────────────────────────────────────
+# conflist.txt
+# ─────────────────────────────────────────────
+
+def read_first_entry(conflist_path):
+    """Retourne le nom du premier fichier toconfirmXX.txt non-vide."""
+    with open(conflist_path, 'r') as f:
+        for line in f:
+            entry = line.strip()
+            if entry:
+                return entry
+    raise ValueError(f"Aucune entree dans {conflist_path}")
+
+
+def remove_first_entry(conflist_path):
+    """Supprime la premiere ligne non-vide de conflist.txt."""
+    with open(conflist_path, 'r') as f:
+        lines = f.readlines()
+    new_lines = []
+    removed = False
+    for line in lines:
+        if not removed and line.strip():
+            removed = True
+        else:
+            new_lines.append(line)
+    with open(conflist_path, 'w') as f:
+        f.writelines(new_lines)
+
+
+
+
+# ─────────────────────────────────────────────
+# Date de nuit (avant midi UTC = veille)
+# ─────────────────────────────────────────────
+
+def night_date():
+    """Retourne la date du debut de la nuit (YYYY-MM-DD).
+    Si heure UTC < 12h00, on prend la date de la veille."""
+    now = datetime.now(timezone.utc)
+    if now.hour < 12:
+        now = now - timedelta(days=1)
+    return now.strftime('%Y-%m-%d')
+
+
+def move_to_confirmsave(filepath, confirmsave_dir):
+    """Deplace le fichier toconfirmXX.txt dans ConfirmSave/(date nuit)."""
+    dest_dir = os.path.join(confirmsave_dir, night_date())
+    os.makedirs(dest_dir, exist_ok=True)
+    dest = os.path.join(dest_dir, os.path.basename(filepath))
+    shutil.move(filepath, dest)
+    log(f"[Dec] Fichier deplace vers {dest}")
+
+# ─────────────────────────────────────────────
+# Parsing MPC par colonnes fixes
+# ─────────────────────────────────────────────
+
+def parse_mpc_line(line):
+    line = line.rstrip('\r\n').ljust(80)
+    date_str = line[15:32].strip()
+    ra_str   = line[32:44].strip()
+    dec_str  = line[44:56].strip()
+
+    dp = date_str.split()
+    if len(dp) != 3:
+        raise ValueError(f"Date invalide : {date_str!r}")
+    year, month = int(dp[0]), int(dp[1])
+    day_frac    = float(dp[2])
+    day_int     = int(day_frac)
+    day_secs    = (day_frac - day_int) * 86400.0
+    obs_dt      = datetime(year, month, day_int, tzinfo=timezone.utc) \
+                  + timedelta(seconds=day_secs)
+
+    rp = ra_str.split()
+    if len(rp) != 3:
+        raise ValueError(f"RA invalide : {ra_str!r}")
+    ra_deg = (int(rp[0]) + int(rp[1]) / 60.0 + float(rp[2]) / 3600.0) * 15.0
+
+    sign    = -1 if dec_str.startswith('-') else 1
+    dp2     = dec_str.lstrip('+-').split()
+    if len(dp2) != 3:
+        raise ValueError(f"Dec invalide : {dec_str!r}")
+    dec_deg = sign * (int(dp2[0]) + int(dp2[1]) / 60.0 + float(dp2[2]) / 3600.0)
+
+    return obs_dt, ra_deg, dec_deg
+
+
+def parse_file(filepath):
+    observations = []
+    with open(filepath, 'r') as f:
+        for line in f:
+            if not line.strip():
+                continue
+            try:
+                observations.append(parse_mpc_line(line))
+            except Exception as e:
+                log(f"  [WARN] Ligne ignoree : {e}", 'warning')
+    if len(observations) < 2:
+        raise ValueError("Il faut au moins 2 mesures valides dans le fichier.")
+    return observations
+
+
+# ─────────────────────────────────────────────
+# Calcul vitesse et extrapolation
+# ─────────────────────────────────────────────
+
+def compute_velocity(obs):
+    t1, ra1, dec1 = obs[0]
+    tn, ran, decn = obs[-1]
+    dt_min = (tn - t1).total_seconds() / 60.0
+    if dt_min == 0:
+        raise ValueError("Timestamps identiques.")
+    dec_mid = math.radians((dec1 + decn) / 2.0)
+    vra  = (ran  - ra1)  * 3600.0 * math.cos(dec_mid) / dt_min
+    vdec = (decn - dec1) * 3600.0                      / dt_min
+    return vra, vdec
+
+
+def extrapolate(obs, vra, vdec, target_dt):
+    tn, ran, decn = obs[-1]
+    dt_min  = (target_dt - tn).total_seconds() / 60.0
+    dec_rad = math.radians(decn)
+    new_ra  = (ran  + vra  * dt_min / (3600.0 * math.cos(dec_rad))) % 360.0
+    new_dec =  decn + vdec * dt_min / 3600.0
+    return new_ra, new_dec
+
+
+# ─────────────────────────────────────────────
+# Fichier resultat temporaire
+# ─────────────────────────────────────────────
+
+def save_result(ra_hours, dec_deg):
+    with open(RESULT_FILE, 'w') as f:
+        f.write(f"{ra_hours:.8f}\n{dec_deg:.8f}\n")
+
+
+def load_result():
+    with open(RESULT_FILE, 'r') as f:
+        lines = f.readlines()
+    return float(lines[0].strip()), float(lines[1].strip())
+
+
+# ─────────────────────────────────────────────
+# Main
+# ─────────────────────────────────────────────
+
+def main():
+    setup_logging()
+
+    if len(sys.argv) < 3:
+        log("Usage : python asteroid_confirm.py <conflist.txt> [RA|Dec]", 'error')
+        sys.exit(NINA_ERROR)
+
+    conflist_path = sys.argv[1]
+    nina_mode     = sys.argv[2].upper()
+
+    if nina_mode not in ('RA', 'DEC', 'COUNT'):
+        log(f"Argument inconnu : {sys.argv[2]}. Utilisez RA, Dec ou COUNT.", 'error')
+        sys.exit(NINA_ERROR)
+
+    confirm_dir     = os.path.dirname(conflist_path)
+    CONFIRMSAVE_DIR = os.path.normpath(os.path.join(confirm_dir, "..", "ConfirmSave"))
+
+    if nina_mode == 'COUNT':
+        try:
+            count = 0
+            with open(conflist_path, 'r') as f:
+                for line in f:
+                    if line.strip():
+                        count += 1
+            log(f"[COUNT] {count} confirmation(s) en attente.")
+            sys.exit(count)
+        except Exception as e:
+            log(f"[COUNT] ERREUR : {e}", 'error')
+            sys.exit(NINA_ERROR)
+
+    if nina_mode == 'RA':
+        try:
+            entry     = read_first_entry(conflist_path)
+            toconfirm = os.path.join(confirm_dir, entry)
+            log(f"[RA] Traitement de {entry}")
+            obs               = parse_file(toconfirm)
+            vra, vdec         = compute_velocity(obs)
+            now               = datetime.now(timezone.utc)
+            ra_deg, dec_deg   = extrapolate(obs, vra, vdec, now)
+            ra_hours          = ra_deg / 15.0
+            speed             = math.sqrt(vra**2 + vdec**2)
+            pa                = math.degrees(math.atan2(vra, vdec)) % 360.0
+            dt_min            = (now - obs[-1][0]).total_seconds() / 60.0
+            log(f"[RA] Extrapolation : {dt_min:.1f} min depuis derniere mesure")
+            log(f"[RA] RA={ra_hours:.6f}h  Dec={dec_deg:.6f}deg  Vitesse={speed:.3f}\"/min  PA={pa:.1f}deg")
+            save_result(ra_hours, dec_deg)
+            exitcode = int(round(ra_hours * NINA_SCALE))
+            log(f"[RA] EXITCODE={exitcode}")
+            sys.exit(exitcode)
+        except Exception as e:
+            log(f"[RA] ERREUR : {e}", 'error')
+            sys.exit(NINA_ERROR)
+
+    if nina_mode == 'DEC':
+        try:
+            ra_hours, dec_deg = load_result()
+            # Recuperer le nom du fichier avant de le retirer de conflist
+            entry     = read_first_entry(conflist_path)
+            toconfirm = os.path.join(os.path.dirname(conflist_path), entry)
+            move_to_confirmsave(toconfirm, CONFIRMSAVE_DIR)
+            remove_first_entry(conflist_path)
+            os.remove(RESULT_FILE)
+            exitcode = int(round(dec_deg * NINA_SCALE))
+            log(f"[Dec] EXITCODE={exitcode}  conflist mis a jour.")
+            sys.exit(exitcode)
+        except Exception as e:
+            log(f"[Dec] ERREUR : {e}", 'error')
+            sys.exit(NINA_ERROR)
+
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,262 @@
+2026-03-27 23:34:17 : --- Début Session : Field_1 (LIGHT) ---
+2026-03-27 23:34:18 : Code champ : FC1AAC
+2026-03-27 23:34:37 : Transfert réseau vers \\JIM-PC\NightImages\2026-03-27\LIGHT\FC1AAC...
+2026-03-27 23:36:48 : Transfert réseau terminé.
+2026-03-27 23:36:49 : Archivage sur E: (E:\NightImages\2026-03-27\LIGHT\FC1AAC)...
+2026-03-27 23:37:27 : Archivage terminé. C: vidé.
+2026-03-27 23:37:27 : --- Fin du processus (FC1AAC) ---
+2026-03-28 00:02:29 : --- Début Session : Field_2 (LIGHT) ---
+2026-03-28 00:02:29 : Code champ : FC2AAD
+2026-03-28 00:02:48 : Transfert réseau vers \\JIM-PC\NightImages\2026-03-27\LIGHT\FC2AAD...
+2026-03-28 00:05:00 : Transfert réseau terminé.
+2026-03-28 00:05:01 : Archivage sur E: (E:\NightImages\2026-03-27\LIGHT\FC2AAD)...
+2026-03-28 00:05:39 : Archivage terminé. C: vidé.
+2026-03-28 00:05:39 : --- Fin du processus (FC2AAD) ---
+2026-03-28 00:27:12 : --- Début Session : Field_3 (LIGHT) ---
+2026-03-28 00:27:12 : Code champ : FC2AAE
+2026-03-28 00:27:31 : Transfert réseau vers \\JIM-PC\NightImages\2026-03-27\LIGHT\FC2AAE...
+2026-03-28 00:29:42 : Transfert réseau terminé.
+2026-03-28 00:29:43 : Archivage sur E: (E:\NightImages\2026-03-27\LIGHT\FC2AAE)...
+2026-03-28 00:30:21 : Archivage terminé. C: vidé.
+2026-03-28 00:30:21 : --- Fin du processus (FC2AAE) ---
+2026-03-28 01:11:11 : --- Début Session : Field_4 (LIGHT) ---
+2026-03-28 01:11:11 : Code champ : FC2AAF
+2026-03-28 01:11:30 : Transfert réseau vers \\JIM-PC\NightImages\2026-03-27\LIGHT\FC2AAF...
+2026-03-28 01:13:44 : Transfert réseau terminé.
+2026-03-28 01:13:45 : Archivage sur E: (E:\NightImages\2026-03-27\LIGHT\FC2AAF)...
+2026-03-28 01:14:21 : Archivage terminé. C: vidé.
+2026-03-28 01:14:22 : --- Fin du processus (FC2AAF) ---
+2026-03-31 21:26:49 : --- Début Session : Field_0 (LIGHT) ---
+2026-03-31 21:26:49 : Code champ : FC5AAG
+2026-03-31 21:26:49 : ERREUR : Source introuvable C:\NightImages\2026-03-31\LIGHT\Field_0
+2026-03-31 21:57:19 : --- Début Session : Field_1 (LIGHT) ---
+2026-03-31 21:57:19 : Code champ : FC5AAH
+2026-03-31 21:57:19 : ERREUR : Source introuvable C:\NightImages\2026-03-31\LIGHT\Field_1
+2026-03-31 22:03:24 : --- Début Session : Field_1 (LIGHT) ---
+2026-03-31 22:03:24 : Code champ : FC5AAI
+2026-03-31 22:03:24 : ERREUR : Source introuvable C:\NightImages\2026-03-31\LIGHT\Field_1
+2026-03-31 22:05:09 : --- Début Session : Field_1 (LIGHT) ---
+2026-03-31 22:05:09 : Code champ : FC5AAJ
+2026-03-31 22:05:09 : ERREUR : Source introuvable C:\NightImages\2026-03-31\LIGHT\Field_1
+2026-03-31 22:06:46 : --- Début Session :  () ---
+2026-03-31 22:06:47 : ERREUR : code champ invalide : 'ERREUR: Valeur hors plage [1-31] : -2020'
+2026-03-31 22:07:22 : --- Début Session : Field_1 (LIGHT) ---
+2026-03-31 22:07:22 : Code champ : FC5AAK
+2026-03-31 22:07:22 : ERREUR : Source introuvable C:\NightImages\2026-03-31\LIGHT\Field_1
+2026-03-31 22:27:41 : --- Début Session : Field_1 (LIGHT) ---
+2026-03-31 22:27:41 : Code champ : FC5AAL
+2026-03-31 22:27:41 : Dossier créé : C:\NightImages\2026-03-31\LIGHT\Field_1
+2026-03-31 22:27:41 : Récupération de 36 fichiers orphelins vers Field_1
+2026-03-31 22:32:28 : --- Fin du processus SURVEY (FC5AAL) ---
+2026-03-31 22:49:06 : --- Début Session : Field_1 (LIGHT) ---
+2026-03-31 22:49:07 : Code champ : FC5AAM
+2026-03-31 22:49:07 : Récupération de 36 fichiers orphelins vers Field_1
+2026-03-31 22:53:36 : Fichiers de synchro créés dans H:\NightImages\sync pour FC5AAM
+2026-03-31 22:53:36 : --- Fin du processus SURVEY (FC5AAM) ---
+2026-03-31 23:11:21 : --- Début Session : Field_2 (LIGHT) ---
+2026-03-31 23:11:21 : Code champ : FC5AAN
+2026-03-31 23:11:21 : Dossier créé : C:\NightImages\2026-03-31\LIGHT\Field_2
+2026-03-31 23:11:21 : Récupération de 36 fichiers orphelins vers Field_2
+2026-03-31 23:15:49 : Signaux de synchro créés avec succès pour FC5AAN
+2026-03-31 23:15:49 : --- Fin du processus SURVEY (FC5AAN) ---
+2026-03-31 23:33:34 : --- Début Session : Field_3 (LIGHT) ---
+2026-03-31 23:33:35 : Code champ : FC5AAO
+2026-03-31 23:33:35 : Dossier créé : C:\NightImages\2026-03-31\LIGHT\Field_3
+2026-03-31 23:33:35 : Récupération de 36 fichiers orphelins vers Field_3
+2026-03-31 23:38:16 : Signaux de synchro créés avec succès pour FC5AAO
+2026-03-31 23:38:16 : --- Fin du processus SURVEY (FC5AAO) ---
+2026-03-31 23:55:35 : --- Début Session : Field_4 (LIGHT) ---
+2026-03-31 23:55:35 : Code champ : FC5AAP
+2026-03-31 23:55:35 : Dossier créé : C:\NightImages\2026-03-31\LIGHT\Field_4
+2026-03-31 23:55:35 : Récupération de 36 fichiers orphelins vers Field_4
+2026-04-01 00:00:18 : Signaux de synchro créés avec succès pour FC5AAP
+2026-04-01 00:00:18 : --- Fin du processus SURVEY (FC5AAP) ---
+2026-04-01 00:17:26 : --- Début Session : FC5AAN1 (CONFIRM) ---
+2026-04-01 00:17:26 : Code champ : FDAAAQ
+2026-04-01 00:17:26 : ERREUR : Source introuvable C:\NightImages\2026-03-31\CONFIRM
+2026-04-01 23:00:59 : --- Début Session : Field_0 (LIGHT) ---
+2026-04-01 23:00:59 : Code champ : FDAAAR
+2026-04-01 23:00:59 : Dossier créé : C:\NightImages\2026-04-01\LIGHT\Field_0
+2026-04-01 23:01:00 : Signaux de synchro créés avec succès pour FDAAAR
+2026-04-01 23:01:00 : --- Fin du processus SURVEY (FDAAAR) ---
+2026-04-01 23:30:21 : --- Début Session : Field_1 (LIGHT) ---
+2026-04-01 23:30:21 : Code champ : FDAAAS
+2026-04-01 23:30:21 : Dossier créé : C:\NightImages\2026-04-01\LIGHT\Field_1
+2026-04-01 23:30:22 : Signaux de synchro créés avec succès pour FDAAAS
+2026-04-01 23:30:22 : --- Fin du processus SURVEY (FDAAAS) ---
+2026-04-01 23:41:25 : --- Début Session : Field_1 (LIGHT) ---
+2026-04-01 23:41:26 : Code champ : FDAAAT
+2026-04-01 23:41:26 : Récupération de 36 fichiers orphelins vers Field_1
+2026-04-02 00:00:53 : --- Début Session : Field_2 (LIGHT) ---
+2026-04-02 00:00:53 : Code champ : FDBAAU
+2026-04-02 00:00:53 : Dossier créé : C:\NightImages\2026-04-01\LIGHT\Field_2
+2026-04-02 00:00:53 : Récupération de 36 fichiers orphelins vers Field_2
+2026-04-02 00:05:02 : Signaux de synchro créés avec succès pour FDBAAU
+2026-04-02 00:05:02 : --- Fin du processus SURVEY (FDBAAU) ---
+2026-04-02 20:41:03 : --- Début Session : Field_0 (LIGHT) ---
+2026-04-02 20:41:03 : Code champ : FDBAAV
+2026-04-02 20:41:03 : Dossier créé : C:\NightImages\2026-04-02\LIGHT\Field_0
+2026-04-02 20:41:03 : Récupération de 36 fichiers orphelins vers Field_0
+2026-04-02 20:45:28 : Signaux de synchro créés avec succès pour FDBAAV
+2026-04-02 20:45:28 : --- Fin du processus SURVEY (FDBAAV) ---
+2026-04-02 21:02:09 : --- Début Session : Field_1 (LIGHT) ---
+2026-04-02 21:02:10 : Code champ : FDBAAW
+2026-04-02 21:02:10 : Dossier créé : C:\NightImages\2026-04-02\LIGHT\Field_1
+2026-04-02 21:02:10 : Récupération de 36 fichiers orphelins vers Field_1
+2026-04-02 21:06:30 : Signaux de synchro créés avec succès pour FDBAAW
+2026-04-02 21:06:30 : --- Fin du processus SURVEY (FDBAAW) ---
+2026-04-02 21:32:21 : --- Début Session : Field_2 (LIGHT) ---
+2026-04-02 21:32:21 : Code champ : FDBAAX
+2026-04-02 21:32:21 : Dossier créé : C:\NightImages\2026-04-02\LIGHT\Field_2
+2026-04-02 21:32:22 : Récupération de 36 fichiers orphelins vers Field_2
+2026-04-02 21:37:13 : Signaux de synchro créés avec succès pour FDBAAX
+2026-04-02 21:37:13 : --- Fin du processus SURVEY (FDBAAX) ---
+2026-04-02 21:54:14 : --- Début Session : FDBAAV1 (CONFIRM) ---
+2026-04-02 21:54:14 : Code champ : FDBAAY
+2026-04-02 21:54:14 : ERREUR : Source introuvable C:\NightImages\2026-04-02\CONFIRM
+2026-04-02 22:46:50 : --- Début Session :  () ---
+2026-04-02 22:46:51 : ERREUR : code champ invalide : 'ERREUR: Valeur hors plage [1-31] : -2020'
+2026-04-02 22:47:53 : --- Début Session :  () ---
+2026-04-02 22:47:53 : ERREUR : code champ invalide : 'ERREUR: Valeur hors plage [1-31] : -2020'
+2026-04-02 22:49:14 : --- Début Session :  () ---
+2026-04-02 22:49:14 : ERREUR : code champ invalide : 'ERREUR: Valeur hors plage [1-31] : -2020'
+2026-04-02 22:51:09 : --- Début Session :  () ---
+2026-04-02 22:51:10 : ERREUR : code champ invalide : 'ERREUR: Valeur hors plage [1-31] : -2020'
+2026-04-02 22:52:56 : --- Début Session : FDBAAV1 (CONFIRM) ---
+2026-04-02 22:52:56 : Code champ : FDBAAZ
+2026-04-02 22:52:56 : Dossier CONFIRM introuvable, tentative dans LIGHT : C:\NightImages\2026-04-02\LIGHT
+2026-04-02 22:54:41 : Process CONFIRM terminé.
+2026-04-02 23:08:23 : --- Début Session : FDBAAV1 (CONFIRM) ---
+2026-04-02 23:08:23 : Code champ : FDBAA1
+2026-04-02 23:08:23 : Dossier CONFIRM introuvable, tentative dans LIGHT : C:\NightImages\2026-04-02\LIGHT
+2026-04-02 23:10:07 : Process CONFIRM terminé : Dossier et images nommés FDBAAV1
+2026-04-03 22:06:58 : --- Début Session : Field_0 (LIGHT) ---
+2026-04-03 22:06:58 : Code champ : FDCAA2
+2026-04-03 22:06:59 : Signaux de synchro créés avec succès pour FDCAA2
+2026-04-03 22:06:59 : --- Fin du processus SURVEY (FDCAA2) ---
+2026-04-03 22:39:58 : --- Début Session : Field_0 (LIGHT) ---
+2026-04-03 22:39:58 : Code champ : FDCAA3
+2026-04-03 22:39:58 : Récupération de 36 fichiers vers Field_0
+2026-04-03 22:39:58 : Coordonnées extraites : 10h36m05s_+30d00m00s
+2026-04-03 22:44:41 : Signaux de synchro créés avec succès pour FDCAA3
+2026-04-03 22:44:41 : --- Fin du processus SURVEY (FDCAA3) ---
+2026-04-03 23:02:21 : --- Début Session : Field_1 (LIGHT) ---
+2026-04-03 23:02:22 : Code champ : FDCAA4
+2026-04-03 23:02:22 : Dossier créé : C:\NightImages\2026-04-03\LIGHT\Field_1
+2026-04-03 23:02:22 : Récupération de 49 fichiers vers Field_1
+2026-04-03 23:02:22 : Coordonnées extraites : 10h39m16s_+30d00m00s
+2026-04-03 23:08:35 : Signaux de synchro créés avec succès pour FDCAA4
+2026-04-03 23:08:35 : --- Fin du processus SURVEY (FDCAA4) ---
+2026-04-03 23:32:41 : --- Début Session : Field_2 (LIGHT) ---
+2026-04-03 23:32:41 : Code champ : FDCAA5
+2026-04-03 23:32:41 : Dossier créé : C:\NightImages\2026-04-03\LIGHT\Field_2
+2026-04-03 23:32:41 : Récupération de 36 fichiers vers Field_2
+2026-04-03 23:32:41 : Coordonnées extraites : 10h42m25s_+29d59m54s
+2026-04-03 23:37:10 : Signaux de synchro créés avec succès pour FDCAA5
+2026-04-03 23:37:10 : --- Fin du processus SURVEY (FDCAA5) ---
+2026-04-04 00:03:46 : --- Début Session : FDCAA31 (CONFIRM) ---
+2026-04-04 00:03:47 : Code champ : FDDABA
+2026-04-04 00:03:47 : Dossier CONFIRM introuvable, tentative dans LIGHT : C:\NightImages\2026-04-03\LIGHT
+2026-04-04 00:03:47 : Dossier créé : C:\NightImages\2026-04-03\LIGHT\FDCAA31
+2026-04-04 00:03:47 : Récupération de 36 fichiers vers FDCAA31
+2026-04-04 00:03:47 : Coordonnées extraites : 10h37m15s_+29d54m50s
+2026-04-04 00:05:32 : Process CONFIRM terminé : Dossier et images nommés FDCAA31
+2026-04-04 21:16:31 : --- Début Session : Field_0 (LIGHT) ---
+2026-04-04 21:16:32 : Code champ : FDDABB
+2026-04-04 21:16:32 : Dossier créé : C:\NightImages\2026-04-04\LIGHT\Field_0
+2026-04-04 21:16:32 : Récupération de 36 fichiers vers Field_0
+2026-04-04 21:16:32 : Coordonnées extraites : 09h49m24s_+29d59m58s
+2026-04-04 21:21:14 : Signaux de synchro créés avec succès pour FDDABB
+2026-04-04 21:21:14 : --- Fin du processus SURVEY (FDDABB) ---
+2026-04-04 21:49:19 : --- Début Session : Field_1 (LIGHT) ---
+2026-04-04 21:49:19 : Code champ : FDDABC
+2026-04-04 21:49:19 : Dossier créé : C:\NightImages\2026-04-04\LIGHT\Field_1
+2026-04-04 21:49:19 : Récupération de 36 fichiers vers Field_1
+2026-04-04 21:49:19 : Coordonnées extraites : 09h52m34s_+30d00m00s
+2026-04-04 21:53:47 : Signaux de synchro créés avec succès pour FDDABC
+2026-04-04 21:53:47 : --- Fin du processus SURVEY (FDDABC) ---
+2026-04-06 22:12:22 : --- Début Session : Field_0 (LIGHT) ---
+2026-04-06 22:12:23 : Code champ : FDFABD
+2026-04-06 22:12:23 : Dossier créé : C:\NightImages\2026-04-06\LIGHT\Field_0
+2026-04-06 22:12:23 : Récupération de 36 fichiers vers Field_0
+2026-04-06 22:12:23 : Coordonnées extraites : 10h50m31s_+30d00m00s
+2026-04-06 22:16:45 : Signaux de synchro créés avec succès pour FDFABD
+2026-04-06 22:16:45 : --- Fin du processus SURVEY (FDFABD) ---
+2026-04-06 22:46:21 : --- Début Session : Field_1 (LIGHT) ---
+2026-04-06 22:46:21 : Code champ : FDFABE
+2026-04-06 22:46:21 : Dossier créé : C:\NightImages\2026-04-06\LIGHT\Field_1
+2026-04-06 22:46:21 : Récupération de 36 fichiers vers Field_1
+2026-04-06 22:46:21 : Coordonnées extraites : 10h53m41s_+29d59m58s
+2026-04-06 22:51:26 : Signaux de synchro créés avec succès pour FDFABE
+2026-04-06 22:51:26 : --- Fin du processus SURVEY (FDFABE) ---
+2026-04-06 23:19:19 : --- Début Session : Field_2 (LIGHT) ---
+2026-04-06 23:19:19 : Code champ : FDFABF
+2026-04-06 23:19:19 : Dossier créé : C:\NightImages\2026-04-06\LIGHT\Field_2
+2026-04-06 23:19:19 : Récupération de 36 fichiers vers Field_2
+2026-04-06 23:19:19 : Coordonnées extraites : 10h56m51s_+29d59m54s
+2026-04-06 23:23:50 : Signaux de synchro créés avec succès pour FDFABF
+2026-04-06 23:23:50 : --- Fin du processus SURVEY (FDFABF) ---
+2026-04-06 23:50:02 : --- Début Session : FDFABE1 (CONFIRM) ---
+2026-04-06 23:50:02 : Code champ : FDFABG
+2026-04-06 23:50:02 : Dossier CONFIRM introuvable, tentative dans LIGHT : C:\NightImages\2026-04-06\LIGHT
+2026-04-06 23:50:02 : Dossier créé : C:\NightImages\2026-04-06\LIGHT\FDFABE1
+2026-04-06 23:50:02 : Récupération de 36 fichiers vers FDFABE1
+2026-04-06 23:50:03 : Coordonnées extraites : 10h54m11s_+29d43m43s
+2026-04-06 23:50:03 : ATTENTION : JIM-PC inaccessible. Copie réseau annulée.
+2026-04-06 23:51:19 : Process CONFIRM terminé : Images sauvegardées sur F: et C: nettoyé.
+2026-04-07 20:15:59 : --- Début Session :  () ---
+2026-04-07 20:16:00 : ERREUR : code champ invalide : 'ERREUR: Valeur hors plage [1-31] : -2020'
+2026-04-07 21:02:42 : --- Début Session : Field_0 (LIGHT) ---
+2026-04-07 21:02:43 : Code champ : FDGABH
+2026-04-07 21:02:43 : Rapatriement de 36 fichiers orphelins.
+2026-04-07 21:02:43 : Coordonnées extraites : 09h44m33s_+30d00m00s
+2026-04-07 21:03:48 : SURVEY FDGABH terminé avec succès.
+2026-04-07 21:36:05 : --- Début Session : Field_1 (LIGHT) ---
+2026-04-07 21:36:05 : Code champ : FDGABI
+2026-04-07 21:36:05 : Rapatriement de 36 fichiers orphelins.
+2026-04-07 21:36:05 : Coordonnées extraites : 09h47m43s_+29d59m53s
+2026-04-07 21:36:52 : SURVEY FDGABI terminé avec succès.
+2026-04-07 22:37:01 : --- Début Session : Field_2 (LIGHT) ---
+2026-04-07 22:37:01 : Code champ : FDGABJ
+2026-04-07 22:37:01 : Rapatriement de 36 fichiers orphelins.
+2026-04-07 22:37:01 : Coordonnées extraites : 09h50m54s_+29d59m24s
+2026-04-07 22:37:48 : SURVEY FDGABJ terminé avec succès.
+2026-04-07 23:10:13 : --- Début Session : Field_3 (LIGHT) ---
+2026-04-07 23:10:14 : Code champ : FDGABK
+2026-04-07 23:10:14 : Rapatriement de 36 fichiers orphelins.
+2026-04-07 23:10:14 : Coordonnées extraites : 09h54m03s_+29d59m53s
+2026-04-07 23:10:59 : SURVEY FDGABK terminé avec succès.
+2026-04-08 12:50:36 : --- Début Session : ChampTest (LIGHT) ---
+2026-04-08 12:50:37 : Code champ : FDHABL
+2026-04-08 12:51:09 : Transfert réseau vers JIM-PC (Persistance 5 min)...
+2026-04-08 12:56:02 : Sauvegarde Archive locale (E:)...
+2026-04-08 12:56:08 : SURVEY FDHABL terminé et sauvegardé sur E:.
+2026-04-08 12:56:08 : Signal bin2 envoyé au JIM-PC.
+2026-04-08 22:26:02 : --- Début Session : Field_0 (LIGHT) ---
+2026-04-08 22:26:03 : Code champ : FDHABM
+2026-04-08 22:26:23 : Sauvegarde Archive locale (E:)...
+2026-04-08 22:26:27 : Transfert vers JIM-PC (H:)...
+2026-04-08 22:31:10 : Signal bin2 envoyé au JIM-PC via H:\sync.
+2026-04-08 22:31:10 : Sauvegarde sur le NAS (Z:)...
+2026-04-08 22:33:59 : NETTOYAGE : Fichiers locaux supprimés. Sauvegarde confirmée sur E: (36 fichiers).
+2026-04-08 22:58:54 : --- Début Session : Field_1 (LIGHT) ---
+2026-04-08 22:58:54 : Code champ : FDHABN
+2026-04-08 22:59:13 : Sauvegarde Archive locale (E:)...
+2026-04-08 22:59:16 : Transfert vers JIM-PC (H:)...
+2026-04-08 23:03:58 : Signal bin2 envoyé au JIM-PC via H:\sync.
+2026-04-08 23:03:58 : Sauvegarde sur le NAS (Z:)...
+2026-04-08 23:06:46 : NETTOYAGE : Fichiers locaux supprimés. Sauvegarde confirmée sur E: (72 fichiers).
+2026-04-08 23:32:53 : --- Début Session : Field_2 (LIGHT) ---
+2026-04-08 23:32:53 : Code champ : FDHABO
+2026-04-08 23:33:12 : Sauvegarde Archive locale (E:)...
+2026-04-08 23:33:16 : Transfert vers JIM-PC (H:)...
+2026-04-08 23:37:55 : Signal bin2 envoyé au JIM-PC via H:\sync.
+2026-04-08 23:37:55 : Sauvegarde sur le NAS (Z:)...
+2026-04-08 23:40:41 : NETTOYAGE : Fichiers locaux supprimés. Sauvegarde confirmée sur E: (36 fichiers).
+2026-04-09 00:06:36 : --- Début Session : Field_3 (LIGHT) ---
+2026-04-09 00:06:37 : Code champ : FDIABP
+2026-04-09 00:06:57 : Sauvegarde Archive locale (E:)...
+2026-04-09 00:07:01 : Transfert vers JIM-PC (\\JIM-PC)...
+2026-04-09 00:11:25 : Signal bin2 envoyé via chemin UNC.
+2026-04-09 00:11:25 : Sauvegarde sur le NAS (Z:)...
+2026-04-09 00:14:09 : NETTOYAGE : Fichiers locaux supprimés. Sauvegarde confirmée sur E: (36 fichiers).

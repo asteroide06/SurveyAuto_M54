@@ -1,0 +1,195 @@
+"""
+survey.py - Generation de coordonnees pour survey astronomique
+Usage depuis NINA :
+    python survey.py RA  <index>   -> retourne la RA du champ n index dans EXIT CODE (degres x 10000)
+    python survey.py Dec <index>   -> retourne la Dec du champ n index dans EXIT CODE (degres x 10000)
+
+Le fichier de config survey_config.txt doit etre dans le meme repertoire que ce script.
+Au premier appel (index=0), la RA de depart est calculee depuis Az/Dec et sauvegardee dans survey_state.txt.
+Les appels suivants utilisent cette RA0 sauvegardee + un pas fixe, independamment du TSL.
+"""
+
+import sys
+import math
+import datetime
+import os
+
+# ─────────────────────────────────────────────
+# Lecture du fichier de config
+# ─────────────────────────────────────────────
+
+def lire_config(chemin):
+    config = {}
+    with open(chemin, 'r', encoding='utf-8') as f:
+        for ligne in f:
+            ligne = ligne.strip()
+            if not ligne or ligne.startswith('#'):
+                continue
+            if '=' in ligne:
+                cle, valeur = ligne.split('=', 1)
+                # Supprimer les commentaires en fin de ligne
+                valeur = valeur.split('#')[0].strip()
+                config[cle.strip()] = valeur
+    return config
+
+# ─────────────────────────────────────────────
+# Calcul du Temps Sideral Local (TSL) en degres
+# ─────────────────────────────────────────────
+
+def calcul_tsl(longitude_deg):
+    """Calcule le TSL en degres pour la date et heure UTC actuelles."""
+    now = datetime.datetime.now(datetime.timezone.utc)
+    Y = now.year
+    M = now.month
+    D = now.day
+    UT = now.hour + now.minute / 60.0 + now.second / 3600.0
+
+    # Jour Julien
+    JD = (367 * Y
+          - int(7 * (Y + int((M + 9) / 12)) / 4)
+          + int(275 * M / 9)
+          + D + 1721013.5
+          + UT / 24.0)
+
+    # Jours depuis J2000.0
+    d = JD - 2451545.0
+
+    # GMST en degres
+    GMST = 280.46061837 + 360.98564736629 * d
+    GMST = GMST % 360.0
+    if GMST < 0:
+        GMST += 360.0
+
+    # TSL
+    TSL = (GMST + longitude_deg) % 360.0
+    if TSL < 0:
+        TSL += 360.0
+
+    return TSL
+
+# ─────────────────────────────────────────────
+# Conversion Az + Dec -> RA
+# ─────────────────────────────────────────────
+
+def az_dec_to_ra(az_deg, dec_deg, latitude_deg, tsl_deg):
+    """
+    Convertit Az (Nord=0, croissant vers l'Est) + Dec en RA.
+    Retourne RA en degres.
+    """
+    az  = math.radians(az_deg)
+    dec = math.radians(dec_deg)
+    lat = math.radians(latitude_deg)
+
+    # Angle horaire H via la formule directe Az -> H
+    tan_H = math.sin(az) / (math.cos(az) * math.sin(lat) - math.tan(dec) * math.cos(lat))
+    H = math.degrees(math.atan(tan_H))
+
+    # Lever l'ambiguite de quadrant :
+    # Az dans [0,180] -> objet a l'Est -> H negatif (avant la culmination)
+    # Az dans [180,360] -> objet a l'Ouest -> H positif
+    if 0 <= az_deg < 180:
+        if H > 0:
+            H -= 180.0
+    else:
+        if H < 0:
+            H += 180.0
+
+    # RA = TSL - H
+    ra = (tsl_deg - H) % 360.0
+    return ra
+
+# ─────────────────────────────────────────────
+# Calcul de la RA et Dec du champ demande
+# ─────────────────────────────────────────────
+
+def get_ra_dec(config, index, repertoire):
+    az_depart  = float(config['Az_depart'])
+    dec_depart = float(config['Dec_depart'])
+    nb_champs  = int(config['Nb_champs'])
+    direction  = config['Direction'].strip().lower()
+    longitude  = float(config['Longitude'])
+    latitude   = float(config['Latitude'])
+
+    # Pas en RA : champ 52.8' avec recouvrement 10%
+    pas_ra_deg = 52.8 * 0.90 / 60.0  # 0.792 degres
+
+    if direction == 'ouest':
+        pas_ra_deg = -pas_ra_deg
+
+    # Fichier de sauvegarde de RA0
+    chemin_state = os.path.join(repertoire, 'survey_state.txt')
+
+    if index == 0:
+        # Calculer RA0 depuis Az/Dec et TSL courant, puis le sauvegarder
+        tsl = calcul_tsl(longitude)
+        ra0 = az_dec_to_ra(az_depart, dec_depart, latitude, tsl)
+        with open(chemin_state, 'w', encoding='utf-8') as f:
+            f.write(f"{ra0}\n")
+        print(f"[state] RA0 = {ra0:.6f} deg sauvegarde dans survey_state.txt")
+    else:
+        # Relire RA0 depuis le fichier state
+        with open(chemin_state, 'r', encoding='utf-8') as f:
+            ra0 = float(f.read().strip())
+
+    # RA du champ demande = RA0 + index * pas
+    ra  = (ra0 + index * pas_ra_deg) % 360.0
+    dec = dec_depart
+
+    return ra, dec, nb_champs
+
+# ─────────────────────────────────────────────
+# Encodage pour EXIT CODE NINA : x 10000
+# ─────────────────────────────────────────────
+def ra_deg_to_exitcode(ra_deg):
+    """RA en degres -> heures decimales x 10000 (entier)."""
+    ra_hours = ra_deg / 15.0
+    return int(round(ra_hours * 10000))
+
+def dec_deg_to_exitcode(dec_deg):
+    """Dec en degres -> degres x 10000 (entier, negatif si Dec < 0)."""
+    return int(round(dec_deg * 10000))
+
+# ─────────────────────────────────────────────
+# Point d'entree
+# ─────────────────────────────────────────────
+
+if __name__ == '__main__':
+    if len(sys.argv) < 3:
+        print("Usage : survey.py RA <index>")
+        print("        survey.py Dec <index>")
+        sys.exit(1)
+
+    argument = sys.argv[1]   # 'RA' ou 'Dec'
+    index    = int(sys.argv[2])
+
+    # Repertoire du script
+    repertoire = os.path.dirname(os.path.abspath(__file__))
+    chemin_config = os.path.join(repertoire, 'survey_config.txt')
+
+    config = lire_config(chemin_config)
+    ra_deg, dec_deg, nb_champs = get_ra_dec(config, index, repertoire)
+
+    if index < 0 or index >= nb_champs:
+        print(f"Index {index} hors limites (0 a {nb_champs-1})")
+        sys.exit(255)
+
+    if argument.upper() == 'RA':
+        code = ra_deg_to_exitcode(ra_deg)
+        ra_h = int(ra_deg / 15)
+        ra_m = int((ra_deg / 15 - ra_h) * 60)
+        ra_s = ((ra_deg / 15 - ra_h) * 60 - ra_m) * 60
+        print(f"Champ {index} : RA = {ra_h:02d}h {ra_m:02d}m {ra_s:05.2f}s  (exitcode={code})")
+        sys.exit(code)
+
+    elif argument.upper() == 'DEC':
+        code = dec_deg_to_exitcode(dec_deg)
+        dec_d = int(abs(dec_deg))
+        dec_m = int((abs(dec_deg) - dec_d) * 60)
+        dec_s = ((abs(dec_deg) - dec_d) * 60 - dec_m) * 60
+        signe = '+' if dec_deg >= 0 else '-'
+        print(f"Champ {index} : Dec = {signe}{dec_d:02d}d {dec_m:02d}m {dec_s:05.2f}s  (exitcode={code})")
+        sys.exit(code)
+
+    else:
+        print(f"Argument inconnu : {argument}. Utiliser 'RA' ou 'Dec'.")
+        sys.exit(1)

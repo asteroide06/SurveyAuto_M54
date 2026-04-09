@@ -1,0 +1,17 @@
+# ─────────────────────────────────────────────────────────────
+# survey_config.txt - Configuration du survey astronomique
+# ─────────────────────────────────────────────────────────────
+
+# Point de départ
+Az_depart  = 185.0       # Azimut (Nord=0°, croissant vers l'Est)
+Dec_depart = 30.0        # Déclinaison en degrés
+
+# Nombre de champs sur la ligne
+Nb_champs  = 20
+
+# Direction du déplacement : Est ou Ouest
+Direction  = Est
+
+# Coordonnées de l'observatoire
+Longitude  = 7.05        # degrés Est (positif)
+Latitude   = 43.62       # degrés Nord

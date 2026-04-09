@@ -1,0 +1,7 @@
+{
+    "count": 47,
+    "encoded": "ABP",
+    "encoding": "base31: A=1..Z=26, 1=27..5=31, AAA=1, AAB=2, ..., ZZ5=29791",
+    "last_updated": "2026-04-09",
+    "last_target": ""
+}

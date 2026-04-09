@@ -1,0 +1,125 @@
+2026-03-12 18:02:16 INFO [RA] Traitement de H:\NightImages\Confirm\toconfirm01.txt
+2026-03-12 18:02:16 INFO [RA] Extrapolation : 22382.0 min depuis derniere mesure
+2026-03-12 18:02:16 INFO [RA] RA=5.689608h  Dec=86.072147deg  Vitesse=10.904"/min  PA=329.9deg
+2026-03-12 18:02:16 INFO [RA] EXITCODE=56896
+2026-03-12 18:02:21 INFO [Dec] EXITCODE=860721  conflist mis a jour.
+2026-03-12 18:03:17 INFO [RA] Traitement de H:\NightImages\Confirm\toconfirm02.txt
+2026-03-12 18:03:17 INFO [RA] Extrapolation : 296.6 min depuis derniere mesure
+2026-03-12 18:03:17 INFO [RA] RA=10.506864h  Dec=49.825652deg  Vitesse=99.540"/min  PA=10.1deg
+2026-03-12 18:03:17 INFO [RA] EXITCODE=105069
+2026-03-12 18:03:23 INFO [Dec] EXITCODE=498257  conflist mis a jour.
+2026-03-13 15:22:49 INFO [RA] Traitement de H:\NightImages\Confirm\toconfirm03.txt
+2026-03-13 15:22:49 INFO [RA] Extrapolation : 2053.8 min depuis derniere mesure
+2026-03-13 15:22:49 INFO [RA] RA=8.225177h  Dec=49.565260deg  Vitesse=5.105"/min  PA=289.6deg
+2026-03-13 15:22:49 INFO [RA] EXITCODE=82252
+2026-03-13 15:22:56 INFO [Dec] EXITCODE=495653  conflist mis a jour.
+2026-03-13 15:23:02 ERROR Argument inconnu : COUNT. Utilisez RA ou Dec.
+2026-03-13 15:25:54 INFO [RA] Traitement de H:\NightImages\Confirm\toconfirm04.txt
+2026-03-13 15:25:54 INFO [RA] Extrapolation : 4902.8 min depuis derniere mesure
+2026-03-13 15:25:54 INFO [RA] RA=20.145555h  Dec=129.570709deg  Vitesse=90.075"/min  PA=45.4deg
+2026-03-13 15:25:54 INFO [RA] EXITCODE=201456
+2026-03-13 15:26:00 INFO [Dec] EXITCODE=1295707  conflist mis a jour.
+2026-03-13 15:26:06 ERROR Argument inconnu : COUNT. Utilisez RA ou Dec.
+2026-03-13 15:33:33 ERROR [RA] ERREUR : Aucune entree dans H:\NightImages\Confirm\conflist.txt
+2026-03-13 15:33:39 ERROR [Dec] ERREUR : [Errno 2] No such file or directory: 'H:\\NightImages\\Scripts\\confirm_result.txt'
+2026-03-13 15:33:46 ERROR Argument inconnu : COUNT. Utilisez RA ou Dec.
+2026-03-23 23:36:31 INFO [COUNT] 0 confirmation(s) en attente.
+2026-03-24 00:00:48 INFO [COUNT] 0 confirmation(s) en attente.
+2026-03-24 00:24:57 INFO [COUNT] 1 confirmation(s) en attente.
+2026-03-26 22:38:21 INFO [COUNT] 0 confirmation(s) en attente.
+2026-03-26 22:39:17 INFO [RA] conflist.txt vide ou absent.
+2026-03-26 22:39:53 INFO [RA] conflist.txt vide ou absent.
+2026-03-26 22:40:59 INFO [COUNT] 0 confirmation(s) en attente.
+2026-03-26 23:12:22 INFO [COUNT] 1 confirmation(s) en attente.
+2026-03-26 23:12:30 INFO [RA] Traitement de toconfirm01.txt
+2026-03-26 23:12:30 INFO [RA] EXITCODE=102415
+2026-03-26 23:12:35 INFO [Dec] Fichier deplace vers C:\NightImages\ConfirmSave\2026-03-26\toconfirm01.txt
+2026-03-26 23:12:35 INFO [Dec] EXITCODE=301107. Objet traité avec succès.
+2026-03-26 23:34:06 ERROR [DEC] ERREUR : [Errno 2] No such file or directory: 'C:\\NightImages\\Scripts\\confirm_result.txt'
+2026-03-26 23:34:06 INFO [DEC] Ligne supprimée malgré l'erreur pour débloquer la suite.
+2026-03-26 23:34:17 INFO [COUNT] 0 confirmation(s) en attente.
+2026-03-28 01:14:28 INFO [COUNT] 1 objet(s) en attente.
+2026-03-28 01:14:38 INFO [ID] Succès : Cible NINA renommée en 'FC1AAC1'
+2026-03-28 01:14:52 INFO [RA] Calculé : 11.3159h
+2026-03-28 01:15:00 INFO [DEC] Fichier archivé vers : C:\NightImages\ConfirmSave\2026-03-27\toconfirm01.txt
+2026-03-28 01:15:00 INFO [DEC] Calculé : 29.5427°
+2026-03-30 15:29:34 [INFO] [INFO] Liste vide, fin de session.
+2026-03-30 15:29:41 [INFO] [COUNT] Reste 0 objets à traiter.
+2026-03-30 15:43:08 [ERROR] [GETCOORDS] Erreur : [Errno 2] No such file or directory: 'C:\\NightImages\\Confirm\\tonconfirm01.txt'
+2026-03-30 15:43:14 [INFO] [COUNT] Reste 1 objets à traiter.
+2026-03-30 15:51:42 [ERROR] [GETCOORDS] Erreur : [Errno 2] No such file or directory: 'C:\\NightImages\\Confirm\\tonconfirm01.txt'
+2026-03-30 15:53:20 [ERROR] [GETCOORDS] Erreur : [Errno 2] No such file or directory: 'C:\\NightImages\\Confirm\\tonconfirm01.txt'
+2026-03-30 15:53:51 [ERROR] [GETCOORDS] Erreur : [Errno 2] No such file or directory: 'C:\\NightImages\\Confirm\\tonconfirm01.txt'
+2026-03-30 15:57:15 [ERROR] [GETCOORDS] Erreur : [Errno 2] No such file or directory: 'c:\\NightImages\\Confirm\\tonconfirm01.txt'
+2026-03-30 15:58:18 [ERROR] [GETCOORDS] Erreur : [Errno 2] No such file or directory: 'c:\\NightImages\\Confirm\\tonconfirm01.txt'
+2026-03-30 15:59:09 [INFO] [API] Succès : Cible mise à jour -> ST26CB5
+2026-03-30 16:00:44 [INFO] [API] Succès : Cible mise à jour -> ST26CB5
+2026-03-30 16:06:35 [INFO] [API] Succès : Cible mise à jour -> ST26CB5
+2026-03-30 21:40:39 [INFO] [API] Succès : Cible mise à jour -> ST26CB5
+2026-03-30 22:17:20 [INFO] [INFO] Liste vide, fin de session.
+2026-03-30 22:18:59 [INFO] [INFO] Liste vide, fin de session.
+2026-03-31 21:26:55 [INFO] [COUNT] Reste 0 objets à traiter.
+2026-03-31 22:49:17 [INFO] [COUNT] Reste 0 objets à traiter.
+2026-03-31 23:11:29 [INFO] [COUNT] Reste 0 objets à traiter.
+2026-03-31 23:33:45 [INFO] [COUNT] Reste 0 objets à traiter.
+2026-03-31 23:55:44 [INFO] [COUNT] Reste 1 objets à traiter.
+2026-03-31 23:55:59 [INFO] [API] Succès : Cible mise à jour -> FC5AAN1
+2026-04-01 00:17:35 [INFO] [FINISH] toconfirm01.txt déplacé vers ConfirmSave.
+2026-04-01 00:17:35 [INFO] [FINISH] Liste mise à jour (COUNT-1).
+2026-04-01 00:17:49 [INFO] [COUNT] Reste 0 objets à traiter.
+2026-04-01 23:01:03 [INFO] [COUNT] Reste 0 objets à traiter.
+2026-04-01 23:30:30 [INFO] [COUNT] Reste 0 objets à traiter.
+2026-04-02 00:01:05 [INFO] [COUNT] Reste 0 objets à traiter.
+2026-04-02 20:41:11 [INFO] [COUNT] Reste 0 objets à traiter.
+2026-04-02 21:02:22 [INFO] [COUNT] Reste 0 objets à traiter.
+2026-04-02 21:32:32 [INFO] [COUNT] Reste 1 objets à traiter.
+2026-04-02 21:32:45 [INFO] [API] Succès : Cible mise à jour -> FDBAAV1
+2026-04-02 21:54:24 [INFO] [FINISH] toconfirm01.txt déplacé vers ConfirmSave.
+2026-04-02 21:54:24 [INFO] [FINISH] Liste mise à jour (COUNT-1).
+2026-04-02 21:54:38 [INFO] [COUNT] Reste 0 objets à traiter.
+2026-04-03 22:07:10 [INFO] [COUNT] Reste 0 objets à traiter.
+2026-04-03 23:02:36 [INFO] [COUNT] Reste 0 objets à traiter.
+2026-04-03 23:32:55 [INFO] [COUNT] Reste 1 objets à traiter.
+2026-04-03 23:33:12 [INFO] [API] Succès : Cible mise à jour -> FDCAA31
+2026-04-04 00:03:55 [INFO] [FINISH] toconfirm01.txt déplacé vers ConfirmSave.
+2026-04-04 00:03:55 [INFO] [FINISH] Liste mise à jour (COUNT-1).
+2026-04-04 00:04:07 [INFO] [COUNT] Reste 0 objets à traiter.
+2026-04-04 21:16:49 [INFO] [COUNT] Reste 0 objets à traiter.
+2026-04-04 21:49:28 [INFO] [COUNT] Reste 1 objets à traiter.
+2026-04-04 21:49:39 [ERROR] [GETCOORDS] Erreur : [Errno 22] Invalid argument: 'C:\\NightImages\\Confirm\\2026-04-04 23:48:19 | [CANDIDATE] FDDABB1 | Field: FDDABB'
+2026-04-04 21:49:47 [INFO] [COUNT] Reste 1 objets à traiter.
+2026-04-04 21:49:58 [ERROR] [GETCOORDS] Erreur : [Errno 22] Invalid argument: 'C:\\NightImages\\Confirm\\2026-04-04 23:48:19 | [CANDIDATE] FDDABB1 | Field: FDDABB'
+2026-04-04 21:50:07 [INFO] [COUNT] Reste 1 objets à traiter.
+2026-04-04 21:50:15 [ERROR] [GETCOORDS] Erreur : [Errno 22] Invalid argument: 'C:\\NightImages\\Confirm\\2026-04-04 23:48:19 | [CANDIDATE] FDDABB1 | Field: FDDABB'
+2026-04-04 21:50:22 [INFO] [COUNT] Reste 1 objets à traiter.
+2026-04-04 21:50:32 [ERROR] [GETCOORDS] Erreur : [Errno 22] Invalid argument: 'C:\\NightImages\\Confirm\\2026-04-04 23:48:19 | [CANDIDATE] FDDABB1 | Field: FDDABB'
+2026-04-04 21:50:40 [INFO] [COUNT] Reste 1 objets à traiter.
+2026-04-04 21:50:50 [ERROR] [GETCOORDS] Erreur : [Errno 22] Invalid argument: 'C:\\NightImages\\Confirm\\2026-04-04 23:48:19 | [CANDIDATE] FDDABB1 | Field: FDDABB'
+2026-04-04 21:50:57 [INFO] [COUNT] Reste 1 objets à traiter.
+2026-04-04 21:51:07 [ERROR] [GETCOORDS] Erreur : [Errno 22] Invalid argument: 'C:\\NightImages\\Confirm\\2026-04-04 23:48:19 | [CANDIDATE] FDDABB1 | Field: FDDABB'
+2026-04-04 21:51:15 [INFO] [COUNT] Reste 1 objets à traiter.
+2026-04-04 21:51:25 [ERROR] [GETCOORDS] Erreur : [Errno 22] Invalid argument: 'C:\\NightImages\\Confirm\\2026-04-04 23:48:19 | [CANDIDATE] FDDABB1 | Field: FDDABB'
+2026-04-04 21:51:34 [INFO] [COUNT] Reste 1 objets à traiter.
+2026-04-04 21:51:44 [ERROR] [GETCOORDS] Erreur : [Errno 22] Invalid argument: 'C:\\NightImages\\Confirm\\2026-04-04 23:48:19 | [CANDIDATE] FDDABB1 | Field: FDDABB'
+2026-04-04 21:51:52 [INFO] [COUNT] Reste 1 objets à traiter.
+2026-04-04 21:52:02 [ERROR] [GETCOORDS] Erreur : [Errno 22] Invalid argument: 'C:\\NightImages\\Confirm\\2026-04-04 23:48:19 | [CANDIDATE] FDDABB1 | Field: FDDABB'
+2026-04-04 21:52:11 [INFO] [COUNT] Reste 1 objets à traiter.
+2026-04-04 21:52:21 [ERROR] [GETCOORDS] Erreur : [Errno 22] Invalid argument: 'C:\\NightImages\\Confirm\\2026-04-04 23:48:19 | [CANDIDATE] FDDABB1 | Field: FDDABB'
+2026-04-04 21:52:29 [INFO] [COUNT] Reste 1 objets à traiter.
+2026-04-04 21:52:37 [ERROR] [GETCOORDS] Erreur : [Errno 22] Invalid argument: 'C:\\NightImages\\Confirm\\2026-04-04 23:48:19 | [CANDIDATE] FDDABB1 | Field: FDDABB'
+2026-04-04 21:59:35 [INFO] [INFO] Liste vide, fin de session.
+2026-04-06 22:12:39 [INFO] [COUNT] Reste 0 objets à traiter.
+2026-04-06 22:46:35 [INFO] [COUNT] Reste 0 objets à traiter.
+2026-04-06 23:19:29 [INFO] [COUNT] Reste 1 objets à traiter.
+2026-04-06 23:19:42 [INFO] [API] Succès : Cible mise à jour -> FDFABE1
+2026-04-06 23:50:10 [INFO] [FINISH] toconfirm01.txt déplacé vers ConfirmSave.
+2026-04-06 23:50:10 [INFO] [FINISH] Liste mise à jour (COUNT-1).
+2026-04-06 23:50:27 [INFO] [COUNT] Reste 0 objets à traiter.
+2026-04-07 21:02:58 [INFO] [COUNT] Reste 0 objets à traiter.
+2026-04-07 21:36:18 [INFO] [COUNT] Reste 0 objets à traiter.
+2026-04-07 22:37:18 [INFO] [COUNT] Reste 0 objets à traiter.
+2026-04-07 23:10:26 [INFO] [COUNT] Reste 0 objets à traiter.
+2026-04-08 22:26:22 [INFO] [COUNT] Reste 0 objets à traiter.
+2026-04-08 22:59:13 [INFO] [COUNT] Reste 0 objets à traiter.
+2026-04-08 23:33:07 [INFO] [COUNT] Reste 0 objets à traiter.
+2026-04-09 00:06:56 [INFO] [COUNT] Reste 0 objets à traiter.
