@@ -1,6 +1,52 @@
 <#
 .SYNOPSIS
-    process_field.ps1 - Automatisation du post-traitement des images FITS.
+    Automatisation complète du post-traitement des images FITS pour les sessions SURVEY et CONFIRM.
+
+.DESCRIPTION
+    Ce script effectue les opérations suivantes :
+    1. Calcule la date astronomique de la session (Date-12h).
+    2. Génère un code de champ unique via un script Python externe.
+    3. Organise les fichiers FITS locaux, extrait les coordonnées RA/DEC du header et renomme les fichiers.
+    4. Gère deux modes de traitement :
+       - Mode SURVEY : Renommage, binning 2x2 via Siril, et triple sauvegarde (Archive E:, JIM-PC H:, NAS Z:).
+       - Mode CONFIRM : Renommage et transfert spécifique vers le dossier de synchronisation réseau.
+    5. Envoie un signal (fichier .txt) pour déclencher automatiquement l'analyse dans Tycho Tracker.
+    6. Nettoie les fichiers temporaires sur le disque C: après confirmation de la sauvegarde sur E:.
+
+.PARAMETER Year
+    Année de la capture (format AAAA). Utilisée pour la date astro et le code champ.
+
+.PARAMETER Month
+    Mois de la capture (1-12).
+
+.PARAMETER Day
+    Jour de la capture (1-31).
+
+.PARAMETER Hour
+    Heure de la capture (0-23). Utilisée pour calculer la date de la nuit (si < 12h, appartient à la nuit précédente).
+
+.PARAMETER Minute
+    Minute de la capture (0-59).
+
+.PARAMETER Second
+    Seconde de la capture (0-59).
+
+.PARAMETER ImageType
+    Type de session : 
+    - "LIGHT" ou "SURVEY" : Déclenche le processus standard de binning et d'archivage triple.
+    - "CONFIRM" : Déclenche le processus simplifié pour les confirmations d'astéroïdes.
+
+.PARAMETER TargetName
+    Nom de la cible tel que défini dans NINA (ex: "Field_1"). Utilisé pour localiser les fichiers sources sur C:.
+
+.EXAMPLE
+    .\process_field.ps1 -Year 2026 -Month 04 -Day 08 -Hour 23 -Minute 30 -Second 00 -ImageType "LIGHT" -TargetName "Field_1"
+    Traite le premier champ de la nuit du 8 avril 2026.
+
+.NOTES
+    Auteur : Aster
+    Dépendances : Siril (siril-cli.exe), Python 3.x, neocp_designation.py.
+    Le script utilise désormais des chemins UNC (\\JIM-PC\...) pour améliorer la fiabilité réseau.
 #>
 
 param(

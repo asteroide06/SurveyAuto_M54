@@ -1,3 +1,43 @@
+"""
+SCRIPT : asteroid_confirm.py
+AUTEUR : Aster
+DESCRIPTION :
+    Ce script gère le flux de travail des confirmations d'astéroïdes dans NINA.
+    Il permet d'extraire des coordonnées depuis une liste MPC, de calculer une 
+    extrapolation de position en temps réel, d'injecter la cible dans NINA via 
+    son API, et de gérer l'archivage de la liste de travail.
+
+USAGE :
+    python asteroid_confirm.py <conflist_path> <MODE>
+
+ARGUMENTS :
+    1. conflist_path (str) : 
+        Chemin complet vers le fichier texte contenant la liste des objets à 
+        confirmer (ex: "H:\\NightImages\\Confirm\\conflist.txt").
+        Ce fichier doit contenir les noms des fichiers MPC (.txt) à traiter.
+
+    2. MODE (str) :
+        Définit l'action à exécuter par le script :
+        
+        - COUNT : 
+            Compte le nombre de lignes restant dans la liste. 
+            Retourne le nombre via l'Exit Code (utile pour les boucles NINA).
+            
+        - GETCOORDS : 
+            Lit le premier fichier MPC de la liste, calcule la position RA/DEC 
+            extrapolée à l'instant T, et l'envoie au conteneur de cible NINA.
+            Retourne la RA formatée pour l'Exit Code (RA_heures * 10000).
+            
+        - FINISH : 
+            Une fois l'acquisition terminée, déplace le fichier MPC traité vers 
+            le dossier 'ConfirmSave' et supprime la ligne correspondante dans 
+            la liste de travail (conflist.txt).
+
+DÉPENDANCES :
+    - Librairies Python : sys, os, shutil, requests, datetime.
+    - Serveur API de NINA activé (par défaut sur le port 1888).
+"""
+
 import sys
 import os
 import shutil
