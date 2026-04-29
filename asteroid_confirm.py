@@ -94,7 +94,10 @@ def send_to_nina(obj_id, ra_deg, dec_deg):
 # --- CALCULS MPC ---
 def parse_mpc_line(line):
     line = line.ljust(80)
-    obj_id = line[5:12].strip()
+    # Lecture large des colonnes 1 à 12 (index 0 à 12) pour attraper 
+    # les numéros définitifs ET les désignations provisoires.
+    obj_id = line[0:12].strip() 
+    
     date_str = line[15:32].strip()
     ra_str, dec_str = line[32:44].strip(), line[44:56].strip()
     

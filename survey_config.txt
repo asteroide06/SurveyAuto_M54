@@ -4,7 +4,7 @@
 
 # Point de départ
 Az_depart  = 185.0       # Azimut (Nord=0°, croissant vers l'Est)
-Dec_depart = 30.0        # Déclinaison en degrés
+Dec_depart = 25.0        # Déclinaison en degrés
 
 # Nombre de champs sur la ligne
 Nb_champs  = 20
@@ -15,3 +15,9 @@ Direction  = Est
 # Coordonnées de l'observatoire
 Longitude  = 7.05        # degrés Est (positif)
 Latitude   = 43.62       # degrés Nord
+
+# Pas de déplacement entre deux champs (en degrés)
+# Ex: 52.8' avec 10% de recouvrement = (52.8 * 0.9) / 60 = 0.792
+# Pas_RA     = 0.792
+# Formule générale : Pas(deg) = Champ (arcmin) * (1 - Recouvrement) / 60
+Pas_RA     = 1.0

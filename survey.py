@@ -119,10 +119,12 @@ def get_ra_dec(config, index, repertoire):
     direction  = config['Direction'].strip().lower()
     longitude  = float(config['Longitude'])
     latitude   = float(config['Latitude'])
-
-    # Pas en RA : champ 52.8' avec recouvrement 10%
-    pas_ra_deg = 52.8 * 0.90 / 60.0  # 0.792 degres
-
+    
+    # --- MODIFICATION ICI --- 
+    # Lecture du pas depuis la config au lieu du calcul statique
+    pas_ra_deg = float(config.get('Pas_RA', 0.792)) 
+    # ------------------------
+    
     if direction == 'ouest':
         pas_ra_deg = -pas_ra_deg
 
