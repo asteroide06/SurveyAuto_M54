@@ -717,3 +717,20 @@ FileNotFoundError: [WinError 53] Le chemin réseau n’a pas été trouvé: '\\\
 2026-04-27 00:08:20 : Signal Tycho envoyé.
 2026-04-27 00:10:19 : Sauvegarde vers Z:\2026-04-26\LIGHT\FD1AED incomplète.
 2026-04-27 00:10:19 : Nettoyage OK : Field_2 supprimé de C:.
+2026-04-29 22:49:33 : --- Début Session : Field_0 (LIGHT) ---
+2026-04-29 22:49:56 : Transfert BIN2 terminé vers \\JIM-PC\NightImages\2026-04-29\LIGHT\FD3AEE\bin2
+2026-04-29 22:49:56 : Signal Tycho envoyé.
+2026-04-29 22:50:03 : Sauvegarde vers Z:\2026-04-29\LIGHT\FD3AEE incomplète.
+2026-04-29 22:50:04 : Nettoyage OK (BIN2) : Field_0 supprimé de C:.
+2026-04-29 23:14:50 : --- Début Session : Field_1 (LIGHT) ---
+2026-04-29 23:15:36 : Transfert BIN2 terminé vers \\JIM-PC\NightImages\2026-04-29\LIGHT\FD3AEF\bin2
+2026-04-29 23:15:36 : Signal Tycho envoyé.
+2026-04-29 23:16:07 : Nettoyage OK (BIN2) : Field_1 supprimé de C:.
+2026-04-29 23:50:31 : --- Début Session : Field_2 (LIGHT) ---
+2026-04-29 23:51:15 : Transfert BIN2 terminé vers \\JIM-PC\NightImages\2026-04-29\LIGHT\FD3AEG\bin2
+2026-04-29 23:51:15 : Signal Tycho envoyé.
+2026-04-29 23:51:44 : Nettoyage OK (BIN2) : Field_2 supprimé de C:.
+2026-04-30 00:21:33 : --- Début Session : FD3AEE1 (CONFIRM) ---
+2026-04-30 00:22:18 : Transfert BIN2 terminé vers \\JIM-PC\NightImages\confsync\2026-04-29\FD3AEE1\bin2
+2026-04-30 00:22:18 : Signal Tycho envoyé.
+2026-04-30 00:22:20 : Nettoyage OK (BIN2) : FD3AEE1 supprimé de C:.

@@ -138,7 +138,7 @@ def process_field(year, month, day, hour, minute, second, image_type, target_nam
             shutil.copy2(str(f), str(dest_remote_bin2 / f.name))
         logging.info(f"Transfert BIN2 terminé vers {dest_remote_bin2}")
 
-        # B. SIGNAL TYCHO (Maintenant que les fichiers sont copiés !)
+        # B. SIGNAL TYCHO
         if is_confirm:
             with (JIM_PC / "confsync/todo.txt").open("a", encoding='utf-8') as f_todo:
                 f_todo.write(f"{u_name}\n")
@@ -149,7 +149,7 @@ def process_field(year, month, day, hour, minute, second, image_type, target_nam
             sync_file.write_text(path_for_tycho)
         logging.info("Signal Tycho envoyé.")
 
-        # C. SAUVEGARDES BIN1 et ARCHIVES
+        # C. SAUVEGARDES BIN1 et ARCHIVES (Conditionnées par only_bin2)
         if not only_bin2:
             (base_remote / "bin1").mkdir(parents=True, exist_ok=True)
             for f in bin1_dir.glob("*.fits"):
@@ -159,7 +159,7 @@ def process_field(year, month, day, hour, minute, second, image_type, target_nam
         for root_dest in [base_archive, base_nas]:
             if root_dest and (root_dest.drive or str(root_dest).startswith('\\')):
                 try:
-                    # On définit les sous-dossiers à traiter
+                    # On définit les sous-dossiers à copier selon le flag
                     subs = ["bin2"] if only_bin2 else ["bin1", "bin2"]
                     for sub in subs:
                         (root_dest / sub).mkdir(parents=True, exist_ok=True)
@@ -169,33 +169,33 @@ def process_field(year, month, day, hour, minute, second, image_type, target_nam
                 except:
                     logging.warning(f"Sauvegarde vers {root_dest} incomplète.")
 
-        # 6. NETTOYAGE FINAL (Vérification par comptage)
-        # On choisit quel dossier vérifier pour valider le transfert
+        # 6. NETTOYAGE FINAL (Vérification par comptage adaptée)
         if only_bin2:
-            # Si on ne garde que le BIN2, on vérifie les fichiers BIN2
             count_src = len(list(bin2_dir.glob("*.fits")))
             count_arch = len(list((base_archive / "bin2").glob("*.fits")))
-            check_type = "BIN2"
+            check_txt = "BIN2"
         else:
-            # Sinon, on vérifie classiquement sur le BIN1
             count_src = len(list(bin1_dir.glob("*.fits")))
             count_arch = len(list((base_archive / "bin1").glob("*.fits")))
-            check_type = "BIN1"
+            check_txt = "BIN1"
 
         if count_src > 0 and count_src == count_arch:
             shutil.rmtree(str(src_field_dir))
-            logging.info(f"Nettoyage OK ({check_type}) : {target_name} supprimé de C:.")
+            logging.info(f"Nettoyage OK ({check_txt}) : {target_name} supprimé de C:.")
         else:
-            logging.warning(f"Nettoyage annulé : Source {check_type} ({count_src}) != Archive ({count_arch})")
+            logging.warning(f"Nettoyage annulé : Source {check_txt} {count_src} != Archive {count_arch}")
+
+    except Exception as e:
+        logging.error(f"Erreur critique : {e}", exc_info=True)
 
 if __name__ == "__main__":
     import sys
-    # Vérifie si le flag --only-bin2 est présent dans les arguments
-    only_bin2 = "--only-bin2" in sys.argv
-    # On retire le flag de la liste pour ne pas perturber le comptage des arguments positionnels
+    # Vérifie si le flag --only-bin2 est présent
+    only_bin2_flag = "--only-bin2" in sys.argv
+    # Nettoie les arguments pour le parsing positionnel
     args = [a for a in sys.argv if a != "--only-bin2"]
     
     if len(args) > 8:
         process_field(int(args[1]), int(args[2]), int(args[3]), 
                       int(args[4]), int(args[5]), int(args[6]), 
-                      args[7], args[8], only_bin2=only_bin2)
+                      args[7], args[8], only_bin2=only_bin2_flag)
