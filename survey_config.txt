@@ -4,7 +4,7 @@
 
 # Point de départ
 Az_depart  = 185.0       # Azimut (Nord=0°, croissant vers l'Est)
-Dec_depart = 25.0        # Déclinaison en degrés
+Dec_depart = 20.0        # Déclinaison en degrés
 
 # Nombre de champs sur la ligne
 Nb_champs  = 20
