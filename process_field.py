@@ -13,9 +13,15 @@ import astropy.units as u
 # 0. CONFIGURATION
 # --------------------------------------------------------------------------
 DRIVE_LOCAL = Path("C:/")
-DRIVE_ARCHIVE = Path("E:/")
-JIM_PC = Path(r"\\JIM-PC\NightImages")
+DRIVE_ARCHIVE = Path("D:/")
+JIM_PC = Path("H:/")
+# Previously JIM_PC = Path(r"\\JIM-PC\NightImages")
 NAS = Path("Z:/")
+# ------- Compte NAS -----------------------------------------------
+# user : admin
+# pass : password
+# --------------------------------------------------------------------------
+
 
 LOG_FILE = DRIVE_LOCAL / "NightImages/Scripts/process_field.log"
 DESIGN_PY = DRIVE_LOCAL / "NightImages/Scripts/neocp_designation.py"
@@ -25,7 +31,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s : %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S',
-    encoding='utf-8' 
+    encoding='utf-8'
 )
 
 # --------------------------------------------------------------------------
@@ -42,27 +48,30 @@ def deg_to_hms_dms(ra_deg, dec_deg):
         return f"RA{ra_deg:.2f}_DEC{dec_deg:.2f}"
 
 def fast_bin2_sum(input_path, output_path, new_obj_name):
-    """Binning 2x2 Sum + Injection du nom de l'objet dans le header."""
+    """Binning 2x2 par Moyenne (évite la saturation) + Injection du nom de l'objet dans le header."""
     try:
         with fits.open(input_path) as hdul:
             data = hdul[0].data.astype(np.float32)
             header = hdul[0].header
-            
+
             # --- MISE À JOUR DU HEADER ---
             header['OBJECT'] = new_obj_name
-            
+
             y, x = data.shape
             y_t, x_t = y - (y % 2), x - (x % 2)
             data = data[:y_t, :x_t]
-            binned = data.reshape(y_t // 2, 2, x_t // 2, 2).sum(axis=(1, 3))
+
+            # CORRECTION : .mean() à la place de .sum() pour ne pas saturer avec le fond de ciel de la Lune
+            binned = data.reshape(y_t // 2, 2, x_t // 2, 2).mean(axis=(1, 3))
             binned = np.clip(binned, 0, 65535).astype(np.uint16)
-            
+
             header['NAXIS1'] = x_t // 2
             header['NAXIS2'] = y_t // 2
-            header['BITPIX'] = 16 
+            header['BITPIX'] = 16
             fits.writeto(output_path, binned, header, overwrite=True)
     except Exception as e:
         logging.error(f"Erreur binning/header {input_path.name}: {e}")
+
 
 def get_unique_target_name(base_path, target_name):
     final_path = base_path / target_name
@@ -79,14 +88,14 @@ def process_field(year, month, day, hour, minute, second, image_type, target_nam
     try:
         dt = datetime(year, month, day, hour, minute, second)
         night_date = (dt - timedelta(hours=12)).strftime("%Y-%m-%d")
-        
+
         # 1. Identification du type
         is_confirm = (image_type.upper() == "CONFIRM")
 
         # 2. Dossiers Sources
         parent_dir = DRIVE_LOCAL / f"NightImages/{night_date}/{image_type}"
         if not parent_dir.exists(): parent_dir = DRIVE_LOCAL / f"NightImages/{night_date}/LIGHT"
-        
+
         src_field_dir = parent_dir / target_name
 
         # Rattrapage fichiers orphelins
@@ -110,14 +119,18 @@ def process_field(year, month, day, hour, minute, second, image_type, target_nam
         if is_confirm:
             # Pour une confirmation, la vérité est le nom dans le Header (ex: 81011)
             final_target_id = header_object
-            field_code = "CONFIRM" 
+            field_code = "CONFIRM"
         else:
             # Pour un Survey, on génère un code FEFAEJ
             try:
-                field_code = subprocess.check_output(["python", str(DESIGN_PY), "--next-field", str(year), str(month), str(day)], text=True).strip()
-            except:
+                # On ne passe plus d'arguments de date, neocp_designation.py
+                # calcule désormais tout seul sa date calée sur UTC - 12h
+                field_code = subprocess.check_output(["python", str(DESIGN_PY), "--next-field"], text=True).strip()
+            except Exception as e:
+                logging.error(f"Échec du calcul du code de champ : {e}")
                 field_code = "UNKNOWN"
             final_target_id = field_code
+
 
         logging.info(f"Nom final retenu pour Tycho : {final_target_id}")
 
@@ -128,7 +141,7 @@ def process_field(year, month, day, hour, minute, second, image_type, target_nam
         for i, f in enumerate(fits_files):
             new_name = f"{final_target_id}_{field_tag}_{i:04d}.fits"
             dest_b1 = bin1_dir / new_name
-            
+
             # Déplacement vers bin1
             shutil.move(str(f), str(dest_b1))
             # Binning vers bin2 + Injection du nom final dans le header OBJECT
@@ -160,9 +173,9 @@ def process_field(year, month, day, hour, minute, second, image_type, target_nam
 
         # B. SIGNAL TYCHO (DUPLIQUÉ SUR JIM-PC, DRIVE_ARCHIVE ET NAS)
         sync_destinations = [
-            ("JIM-PC", JIM_PC),                            
-            ("ARCHIVE_E", DRIVE_ARCHIVE / "NightImages"),   
-            ("NAS_Z", NAS)                                  
+            ("JIM-PC", JIM_PC),
+            (f"ARCHIVE_{DRIVE_ARCHIVE.drive[0]}", DRIVE_ARCHIVE / "NightImages"),
+            ("NAS_Z", NAS)
         ]
 
         for label, root_sync in sync_destinations:
@@ -190,8 +203,8 @@ def process_field(year, month, day, hour, minute, second, image_type, target_nam
                 logging.info("Copie BIN1 sur JIM-PC réussie.")
             except Exception as e:
                 logging.error(f"JIM-PC inaccessible pour le BIN1 : {e}")
-        
-        # Sauvegardes locales (E:) et réseau (NAS Z:) indépendantes
+
+        # Sauvegardes locales (D:) et réseau (NAS Z:) indépendantes
         for root_dest in [base_archive, base_nas]:
             if root_dest:
                 try:
@@ -204,9 +217,9 @@ def process_field(year, month, day, hour, minute, second, image_type, target_nam
                     logging.info(f"Sauvegarde réussie vers {root_dest}")
                 except Exception as e:
                     logging.warning(f"Sauvegarde vers {root_dest} incomplète ou impossible : {e}")
-                    
-                    
-                    
+
+
+
         # 6. NETTOYAGE FINAL (RÉTABLI ET ALIGNÉ SUR LE BLOC TRY PRINCIPAL)
         check_folder = base_archive / ("bin2" if only_bin2 else "bin1")
         count_src = len(list((bin2_dir if only_bin2 else bin1_dir).glob("*.fits")))
@@ -226,61 +239,8 @@ if __name__ == "__main__":
     import sys
     only_bin2_flag = "--only-bin2" in sys.argv
     args = [a for a in sys.argv if a != "--only-bin2"]
-    
+
     if len(args) > 8:
-        process_field(int(args[1]), int(args[2]), int(args[3]), 
-                      int(args[4]), int(args[5]), int(args[6]), 
-                      args[7], args[8], only_bin2=only_bin2_flag)                      
-
-
-
-#Ancienne version de la section 5 conservée ici, car Gemini a du mal à ne pas détruire ce qui existait... 
-
-
-        # # 5. TRANSFERTS
-        # if is_confirm:
-            # remote_root = JIM_PC / f"confsync/{night_date}"
-            # u_name = get_unique_target_name(remote_root, final_target_id)
-            # base_remote = remote_root / u_name
-            # base_archive = DRIVE_ARCHIVE / f"NightImages/{night_date}/CONFIRM/{u_name}"
-            # base_nas = None
-        # else:
-            # base_remote = JIM_PC / f"{night_date}/{image_type}/{final_target_id}"
-            # base_archive = DRIVE_ARCHIVE / f"NightImages/{night_date}/{image_type}/{final_target_id}"
-            # base_nas = NAS / f"{night_date}/{image_type}/{final_target_id}"
-
-        # # A. PRIORITÉ BIN2 -> JIM-PC
-        # dest_remote_bin2 = base_remote / "bin2"
-        # dest_remote_bin2.mkdir(parents=True, exist_ok=True)
-        # for f in bin2_dir.glob("*.fits"):
-            # shutil.copy2(str(f), str(dest_remote_bin2 / f.name))
-
-        # # B. SIGNAL TYCHO (Cohérent avec final_target_id)
-        # if is_confirm:
-            # with (JIM_PC / "confsync/todo.txt").open("a", encoding='utf-8') as f_todo:
-                # f_todo.write(f"{u_name}\n")
-        # else:
-            # path_for_tycho = f"H:/NightImages/{night_date}/{image_type}/{final_target_id}/bin2"
-            # sync_file = JIM_PC / f"sync/bin2_{final_target_id}.txt"
-            # sync_file.parent.mkdir(exist_ok=True)
-            # sync_file.write_text(path_for_tycho)
-        # logging.info(f"Signal Tycho envoyé pour {final_target_id}.")
-
-        # # C. SAUVEGARDES BIN1 et ARCHIVES
-        # if not only_bin2:
-            # (base_remote / "bin1").mkdir(parents=True, exist_ok=True)
-            # for f in bin1_dir.glob("*.fits"):
-                # shutil.copy2(str(f), str(base_remote / "bin1" / f.name))
-        
-        # for root_dest in [base_archive, base_nas]:
-            # if root_dest and (root_dest.drive or str(root_dest).startswith('\\')):
-                # try:
-                    # subs = ["bin2"] if only_bin2 else ["bin1", "bin2"]
-                    # for sub in subs:
-                        # (root_dest / sub).mkdir(parents=True, exist_ok=True)
-                        # src_d = bin1_dir if sub == "bin1" else bin2_dir
-                        # for f in src_d.glob("*.fits"):
-                            # shutil.copy2(str(f), str(root_dest / sub / f.name))
-                # except:
-                    # logging.warning(f"Sauvegarde vers {root_dest} incomplète.")
-
+        process_field(int(args[1]), int(args[2]), int(args[3]),
+                      int(args[4]), int(args[5]), int(args[6]),
+                      args[7], args[8], only_bin2=only_bin2_flag)
