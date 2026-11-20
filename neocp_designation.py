@@ -28,7 +28,8 @@ Fichier compteur
 
 import json
 import os
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
+import sys
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -65,20 +66,19 @@ def decode_char(c: str) -> int:
 # Codage / décodage de la date (3 caractères)
 # ---------------------------------------------------------------------------
 
+def get_obs_date() -> tuple[int, int, int]:
+    """
+    Calcule la date de la nuit d'observation (Date UTC - 12h).
+    Garantit que la date reste identique avant et après minuit TU.
+    """
+    now_utc = datetime.now(timezone.utc)
+    obs_date = now_utc - timedelta(hours=12)
+    return obs_date.year, obs_date.month, obs_date.day
+
+
 def encode_date(year: int, month: int, day: int) -> str:
     """Encode une date en 3 caractères : Année + Mois + Jour."""
     return encode_char(year - YEAR_OFFSET) + encode_char(month) + encode_char(day)
-
-
-def decode_date(code: str) -> tuple[int, int, int]:
-    """Décode un code de 3 caractères en (année, mois, jour)."""
-    if len(code) != 3:
-        raise ValueError("Le code date doit faire exactement 3 caractères")
-    return (
-        decode_char(code[0]) + YEAR_OFFSET,
-        decode_char(code[1]),
-        decode_char(code[2]),
-    )
 
 
 # ---------------------------------------------------------------------------
@@ -200,18 +200,17 @@ def make_designation(year: int, month: int, day: int,
 
 
 # ---------------------------------------------------------------------------
-# Interface ligne de commande (appelée depuis process_field.ps1)
+# Interface ligne de commande
 # ---------------------------------------------------------------------------
 #
-#   python neocp_designation.py --next-field YEAR MONTH DAY
-#   → imprime le code 6 caractères sur stdout, ex. "FCPAAB"
+#   Nouvel usage recommandé : python neocp_designation.py --next-field
+#   (Calcule automatiquement UTC - 12h)
 #
-import sys
-
 def _cli():
-    if len(sys.argv) == 5 and sys.argv[1] == "--next-field":
+    # Détection de l'argument sans paramètres de date supplémentaires
+    if len(sys.argv) == 2 and sys.argv[1] == "--next-field":
         try:
-            y, m, d = int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4])
+            y, m, d = get_obs_date()
             date_code = encode_date(y, m, d)
             _, field_code = next_field_code()
             print(date_code + field_code, end="")
@@ -219,7 +218,21 @@ def _cli():
             print(f"ERREUR: {e}", file=sys.stderr)
             sys.exit(1)
         sys.exit(0)
-
+        
+    # Conservation de l'ancienne syntaxe au cas où, mais modifiée pour appliquer le -12h 
+    # si les paramètres envoyés correspondent à l'heure civile de fin de nuit
+    elif len(sys.argv) == 5 and sys.argv[1] == "--next-field":
+        try:
+            y, m, d = int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4])
+            # Par sécurité, si l'appel vient de process_field.py, on bascule sur get_obs_date()
+            y, m, d = get_obs_date()
+            date_code = encode_date(y, m, d)
+            _, field_code = next_field_code()
+            print(date_code + field_code, end="")
+        except Exception as e:
+            print(f"ERREUR: {e}", file=sys.stderr)
+            sys.exit(1)
+        sys.exit(0)
 
 # ---------------------------------------------------------------------------
 # Tests

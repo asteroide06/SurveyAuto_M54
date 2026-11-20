@@ -152,19 +152,25 @@ def get_ra_dec(config, index, repertoire):
 # ─────────────────────────────────────────────
 # NOUVEAU : Injection dans N.I.N.A.
 # ─────────────────────────────────────────────
-def inject_to_nina(name, ra_hours, dec_deg): # Changé ra_deg en ra_hours pour plus de clarté
+def inject_to_nina(name, ra_deg_val, dec_deg):
+    """
+    Injecte la cible directement dans le Séquenceur de N.I.N.A. (v2) via son API HTTP.
+    RA et DEC sont transmis en degrés décimaux.
+    """
+    # L'URL exacte de ton API v2 N.I.N.A.
     url = "http://localhost:1888/v2/api/sequence/set-target"
     
+    # Préparation des paramètres (RA en degrés décimaux)
     params = {
-        "name": str(name),
-        "ra": f"{ra_hours:.6f}",  # C'est maintenant limpide
+        "name": name,
+        "ra": f"{ra_deg_val:.6f}",
         "dec": f"{dec_deg:.6f}",
         "rotation": "0",
         "index": "0" 
     }
     
     try:
-        # ON UTILISE GET (important !)
+        # Utilisation de la méthode GET comme spécifié dans la doc v2
         r = requests.get(url, params=params, timeout=5)
         if r.status_code == 200:
             print(f"[API] Succès : Cible mise à jour -> {name}")
