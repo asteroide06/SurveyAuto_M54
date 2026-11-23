@@ -17,11 +17,8 @@ DRIVE_ARCHIVE = Path("D:/")
 JIM_PC = Path("H:/")
 # Previously JIM_PC = Path(r"\\JIM-PC\NightImages")
 NAS = Path("Z:/")
-# ------- Compte NAS -----------------------------------------------
-# user : admin
-# pass : password
+# Connexion NAS gérée via le lecteur réseau Z: et le Gestionnaire d'identification Windows
 # --------------------------------------------------------------------------
-
 
 LOG_FILE = DRIVE_LOCAL / "NightImages/Scripts/process_field.log"
 DESIGN_PY = DRIVE_LOCAL / "NightImages/Scripts/neocp_designation.py"
