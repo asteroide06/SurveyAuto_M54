@@ -8,6 +8,8 @@ from pathlib import Path
 from astropy.io import fits
 from astropy.coordinates import SkyCoord
 import astropy.units as u
+import smtplib
+from email.message import EmailMessage
 
 # --------------------------------------------------------------------------
 # 0. CONFIGURATION
@@ -30,6 +32,58 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S',
     encoding='utf-8'
 )
+
+# --------------------------------------------------------------------------
+# 0.1. ALERTE ESPACE DISQUE
+# --------------------------------------------------------------------------
+# Pour tester l'envoi d'e-mail d'alerte, exécuter dans une fenêtre Powershell : 
+# python -c "import process_field as pf; pf.MIN_FREE_GB = 10; pf.send_low_disk_email(['- C:/ : 6.4 Go libres (seuil : 10 Go)'])"
+
+MIN_FREE_GB = 10
+ALERT_FLAG_FILE = DRIVE_LOCAL / "NightImages/Scripts/.low_disk_alert_sent"
+SMTP_USER = os.environ.get("M54_SMTP_USER", "asteroide06@gmail.com")
+SMTP_APP_PASSWORD = os.environ.get("M54_SMTP_APP_PASSWORD", "")
+
+def send_low_disk_email(alerts):
+    msg = EmailMessage()
+    msg["Subject"] = f"[Observatoire M54] Alerte espace disque < {MIN_FREE_GB} Go"
+    msg["From"] = "asteroide06@gmail.com"
+    msg["To"] = "asteroide06@gmail.com"
+    msg.set_content("Espace disque libre critique détecté :\n\n" + "\n".join(alerts))
+
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+        smtp.login(SMTP_USER, SMTP_APP_PASSWORD)
+        smtp.send_message(msg)
+
+def check_drives_space(drives, threshold_gb=MIN_FREE_GB):
+    threshold_bytes = threshold_gb * (1024 ** 3)
+    alerts = []
+    any_low = False
+
+    for d in drives:
+        try:
+            usage = shutil.disk_usage(str(d))
+            free_gb = usage.free / (1024 ** 3)
+            logging.info(f"Espace libre {d} : {free_gb:.1f} Go")
+            if usage.free < threshold_bytes:
+                any_low = True
+                alerts.append(f"- {d} : {free_gb:.1f} Go libres (seuil : {threshold_gb} Go)")
+        except Exception as e:
+            logging.warning(f"Impossible de lire l'espace disque de {d} : {e}")
+
+    if any_low:
+        if not ALERT_FLAG_FILE.exists():
+            try:
+                send_low_disk_email(alerts)
+                ALERT_FLAG_FILE.write_text("sent", encoding="utf-8")
+                logging.info("E-mail d'alerte espace disque envoyé.")
+            except Exception as e:
+                logging.error(f"Échec envoi e-mail alerte disque : {e}")
+    else:
+        if ALERT_FLAG_FILE.exists():
+            ALERT_FLAG_FILE.unlink()
+
+
 
 # --------------------------------------------------------------------------
 # FONCTIONS OUTILS
@@ -82,6 +136,11 @@ def get_unique_target_name(base_path, target_name):
 # --------------------------------------------------------------------------
 def process_field(year, month, day, hour, minute, second, image_type, target_name, only_bin2=False):
     logging.info(f"--- Début Session : {target_name} ({image_type}) ---")
+    
+    # Vérification systématique de C: et D: dès le début de l'exécution
+    check_drives_space([DRIVE_LOCAL, DRIVE_ARCHIVE, JIM_PC, NAS])
+    
+   
     try:
         dt = datetime(year, month, day, hour, minute, second)
         night_date = (dt - timedelta(hours=12)).strftime("%Y-%m-%d")
