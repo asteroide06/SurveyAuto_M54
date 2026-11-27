@@ -16,8 +16,10 @@ Direction  = Est
 Longitude  = 7.05        # degrés Est (positif)
 Latitude   = 43.62       # degrés Nord
 
+# Durée globale d'un champ (poses + dithering + focalisation + plate solving) en minutes
+Duree_champ_min = 33.0
+
 # Pas de déplacement entre deux champs (en degrés)
-# Ex: 52.8' avec 10% de recouvrement = (52.8 * 0.9) / 60 = 0.792
-# Pas_RA     = 0.792
-# Formule générale : Pas(deg) = Champ (arcmin) * (1 - Recouvrement) / 60
-Pas_RA     = 1.0
+# Formule : Pas_RA = (Duree_champ_min / 60.0) * 15.0
+# Avec 33.0 min : (33.0 / 60.0) * 15.0 = 8.25
+Pas_RA         = 8.25
