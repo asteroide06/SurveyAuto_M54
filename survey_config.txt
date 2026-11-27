@@ -20,6 +20,6 @@ Latitude   = 43.62       # degrés Nord
 Duree_champ_min = 33.0
 
 # Pas de déplacement entre deux champs (en degrés)
-# Formule : Pas_RA = (Duree_champ_min / 60.0) * 15.0
-# Avec 33.0 min : (33.0 / 60.0) * 15.0 = 8.25
-Pas_RA         = 8.25
+# Formule : Pas_RA = (Duree_champ_min / 60.0) * 15.041068
+# Avec 33.0 min : (33.0 / 60.0) * 15.041068 = 8.2725874
+Pas_RA         = 8.2725874
